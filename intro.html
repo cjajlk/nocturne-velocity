@@ -9,92 +9,210 @@
 
 <style>
 body {
-    margin:0;
-    overflow:hidden;
-    background:black;
-    font-family:'Orbitron', sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    color:#00fff7;
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: 'Orbitron', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    color: #00fff7;
 }
 
-/* Canvas background */
 #bgCanvas {
-    position:absolute;
-    top:0;
-    left:0;
-    z-index:0;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
 }
 
-/* Center content */
 .intro-container {
-    position:relative;
-    z-index:2;
-    text-align:center;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: min(92vw, 900px);
+    padding: 0 14px;
 }
 
-/* Title */
 .title {
-    font-size:4rem;
-    letter-spacing:6px;
+    font-size: clamp(2rem, 8vw, 4rem);
+    letter-spacing: clamp(2px, 0.8vw, 6px);
     text-shadow:
         0 0 10px #00fff7,
         0 0 20px #00fff7,
         0 0 40px #00b7ff;
-    animation: fadeIn 2s ease forwards;
-    opacity:0;
+    opacity: 0;
+    animation: fadeInTitle 1.5s ease forwards;
+    animation-delay: 2.3s;
 }
 
-/* Subtitle */
 .subtitle {
-    margin-top:20px;
-    font-size:1.2rem;
-    opacity:0;
-    animation: fadeIn 2s ease forwards;
-    animation-delay:1.5s;
+    margin-top: clamp(12px, 2.8vh, 20px);
+    font-size: clamp(0.85rem, 3.7vw, 1.2rem);
+    line-height: 1.35;
+    opacity: 0;
+    animation: fadeIn 1.5s ease forwards;
+    animation-delay: 1.2s;
 }
 
-/* Button */
 .play-btn {
-    margin-top:60px;
-    padding:16px 60px;
-    font-size:1.4rem;
-    background:transparent;
-    border:2px solid #00fff7;
-    color:#00fff7;
-    cursor:pointer;
-    transition:0.3s;
-    text-shadow:0 0 10px #00fff7;
-    animation: pulse 2s infinite;
+    margin-top: clamp(34px, 8vh, 60px);
+    padding: clamp(10px, 2.1vh, 16px) clamp(28px, 9vw, 60px);
+    min-height: 44px;
+    font-size: clamp(1rem, 4.5vw, 1.4rem);
+    background: transparent;
+    border: 2px solid #00fff7;
+    color: #00fff7;
+    cursor: pointer;
+    transition: 0.3s;
+    text-shadow: 0 0 10px #00fff7;
+    animation: pulse 2s infinite, fadeInBtn 1.5s ease forwards;
+    animation-delay: 0s, 3.2s;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .play-btn:hover {
-    background:#00fff7;
-    color:black;
-    box-shadow:0 0 25px #00fff7;
+    background: #00fff7;
+    color: black;
+    box-shadow: 0 0 25px #00fff7;
 }
 
-/* Animations */
+#shipIntro {
+    position: absolute;
+    width: clamp(120px, 30vw, 180px);
+    left: 50%;
+    bottom: -38vh;
+    transform: translateX(-50%);
+    z-index: 3;
+    filter: drop-shadow(0 0 25px #00fff7);
+    will-change: transform, bottom, opacity;
+}
+
+#engineFlame {
+    position: absolute;
+    width: clamp(14px, 4vw, 20px);
+    height: clamp(56px, 14vw, 80px);
+    left: 50%;
+    bottom: -40vh;
+    transform: translateX(-50%);
+    background: linear-gradient(to top,
+        rgba(0,255,247,0.9),
+        rgba(0,183,255,0.6),
+        transparent);
+    filter: blur(6px);
+    border-radius: 50%;
+    will-change: transform, bottom, opacity, height;
+}
+
+#engineFlame::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: clamp(120px, 24vw, 200px);
+    bottom: calc(-1 * clamp(120px, 24vw, 200px) + 20px);
+    background: linear-gradient(to top, rgba(0,255,247,0.6), transparent);
+    filter: blur(4px);
+}
+
+#softFlash {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: radial-gradient(circle at center, rgba(180, 245, 255, 0.3), rgba(0, 0, 0, 0) 60%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+#softFlash.flash-active {
+    opacity: 1;
+    animation: softFlashOut 0.7s ease forwards;
+}
+
 @keyframes fadeIn {
-    to { opacity:1; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInTitle {
+    to { opacity: 1; }
+}
+
+@keyframes fadeInBtn {
+    to {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 @keyframes pulse {
-    0% { box-shadow:0 0 10px #00fff7; }
-    50% { box-shadow:0 0 25px #00fff7; }
-    100% { box-shadow:0 0 10px #00fff7; }
+    0% { box-shadow: 0 0 10px #00fff7; }
+    50% { box-shadow: 0 0 25px #00fff7; }
+    100% { box-shadow: 0 0 10px #00fff7; }
+}
+
+@keyframes flameAnim {
+    0% { height: clamp(56px, 14vw, 80px); opacity: 0.8; }
+    100% { height: clamp(70px, 18vw, 95px); opacity: 1; }
+}
+
+@keyframes flameMove {
+    0% { bottom: -40vh; }
+    100% { bottom: 120%; }
+}
+
+@keyframes flyUp {
+    0% {
+        bottom: -38vh;
+        transform: translateX(-50%) scale(0.7);
+        opacity: 0.8;
+    }
+    40% {
+        bottom: 45%;
+        transform: translateX(-50%) scale(1.1);
+    }
+    100% {
+        bottom: 120%;
+        transform: translateX(-50%) scale(0.85);
+    }
+}
+
+@keyframes softFlashOut {
+    from { opacity: 0.95; }
+    to { opacity: 0; }
+}
+
+@media (max-width: 760px) {
+    .intro-container {
+        width: 94vw;
+    }
+
+    #shipIntro {
+        width: clamp(110px, 34vw, 160px);
+    }
+}
+
+@media (max-width: 420px) {
+    .title {
+        letter-spacing: 1px;
+    }
+
+    .subtitle {
+        max-width: 92%;
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 </style>
 </head>
 
 <body>
-
-
 <canvas id="bgCanvas"></canvas>
 
-<img id="shipIntro" src="assets/vaisseau/vaisseau1.png">
+<img id="shipIntro" src="assets/vaisseau/vaisseau1.png" alt="Vaisseau Nocturne">
 <div id="engineFlame"></div>
 <div id="softFlash"></div>
 
@@ -104,132 +222,82 @@ body {
     <button class="play-btn" id="playBtn" onclick="startGame()">ENTRER</button>
 </div>
 
-<style>
-
-/* Vaisseau */
-#shipIntro{
-    position:absolute;
-    width:180px;
-    left:50%;
-    bottom:-250px;
-    transform:translateX(-50%);
-    z-index:3;
-    filter:drop-shadow(0 0 25px #00fff7);
-    /* animation: flyUp 3s ease-in-out forwards; */
-}
-
-/* Flamme moteur */
-#engineFlame{
-    position:absolute;
-    width:20px;
-    height:80px;
-    left:50%;
-    bottom:-260px;
-    transform:translateX(-50%);
-    background:linear-gradient(to top,
-        rgba(0,255,247,0.9),
-        rgba(0,183,255,0.6),
-        transparent);
-    filter:blur(6px);
-    border-radius:50%;
-    /* animation: flameAnim 0.15s infinite alternate, flameMove 3s ease-in-out forwards; */
-}
-
-/* Traînée lumineuse */
-#engineFlame::after{
-    content:"";
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    width:4px;
-    height:200px;
-    bottom:-180px;
-    background:linear-gradient(to top,
-        rgba(0,255,247,0.6),
-        transparent);
-    filter:blur(4px);
-}
-
-@keyframes flameAnim{
-    0%{height:70px; opacity:0.8;}
-    100%{height:95px; opacity:1;}
-}
-
-@keyframes flameMove{
-    0%{bottom:-260px;}
-    100%{bottom:120%;}
-}
-
-@keyframes flyUp{
-    0%{
-        bottom:-250px;
-        transform:translateX(-50%) scale(0.7);
-        opacity:0.8;
-    }
-    40%{
-        bottom:45%;
-        transform:translateX(-50%) scale(1.1);
-    }
-    100%{
-        bottom:120%;
-        transform:translateX(-50%) scale(0.85);
-    }
-}
-
-.title{
-    opacity:0;
-    animation: fadeInTitle 1.5s ease forwards;
-    animation-delay:2.5s;
-}
-
-.play-btn{
-    opacity:0;
-    pointer-events:none;
-    animation: fadeInBtn 1.5s ease forwards;
-    animation-delay:3.5s;
-}
-
-@keyframes fadeInTitle{
-    to{opacity:1;}
-}
-
-@keyframes fadeInBtn{
-    to{
-        opacity:1;
-        pointer-events:auto;
-    }
-}
-</style>
-
 <script>
-/* transition vers le menu */
-function startGame(){
-    if(window.audioCtx && audioCtx.state === "suspended"){
-        audioCtx.resume();
-    }
-    document.body.style.transition="1s";
-    document.body.style.opacity="0";
-    setTimeout(()=>{
-        window.location.href="menu.html";
-    },1000);
-}
-</script>
-
-</body>
-<script>
-let audioCtx;
+let audioCtx = null;
 let launched = false;
 
-function initAudio(){
-    if(!audioCtx){
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+const stars = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+function regenerateStars() {
+    stars.length = 0;
+    const referenceArea = 390 * 844;
+    const currentArea = Math.max(1, canvas.width * canvas.height);
+    const densityFactor = currentArea / referenceArea;
+    const starCount = Math.max(90, Math.min(360, Math.round(130 * densityFactor)));
+
+    for (let i = 0; i < starCount; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 1.8 + 0.2,
+            speed: Math.random() * 0.24 + 0.06,
+            color: Math.random() > 0.25 ? "rgba(0,255,247,0.8)" : "rgba(255,255,255,0.45)"
+        });
+    }
+}
+
+function drawBackground() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const gradient = ctx.createRadialGradient(
+        canvas.width / 2,
+        canvas.height / 2,
+        0,
+        canvas.width / 2,
+        canvas.height / 2,
+        Math.max(canvas.width, canvas.height) * 0.7
+    );
+    gradient.addColorStop(0, "rgba(60,20,120,0.22)");
+    gradient.addColorStop(0.5, "rgba(20,10,50,0.35)");
+    gradient.addColorStop(1, "rgba(0,0,0,1)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    stars.forEach((star) => {
+        ctx.fillStyle = star.color;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        star.y += star.speed;
+        if (star.y > canvas.height + 2) {
+            star.y = -2;
+            star.x = Math.random() * canvas.width;
+        }
+    });
+
+    requestAnimationFrame(drawBackground);
+}
+
+function initAudio() {
+    if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    if(audioCtx.state === "suspended"){
+    if (audioCtx.state === "suspended") {
         audioCtx.resume();
     }
 }
 
-function playLaunchSound(){
+function playLaunchSound() {
+    if (!audioCtx) return;
+
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
@@ -246,45 +314,49 @@ function playLaunchSound(){
     osc.stop(audioCtx.currentTime + 2.5);
 }
 
-function launchSequence(){
-    if(launched) return;
+function launchSequence() {
+    if (launched) return;
     launched = true;
 
     initAudio();
     playLaunchSound();
 
-    document.getElementById("shipIntro").style.animation = "flyUp 3s ease-in-out forwards";
-    document.getElementById("engineFlame").style.animation =
-        "flameAnim 0.15s infinite alternate, flameMove 3s ease-in-out forwards";
+    const ship = document.getElementById("shipIntro");
+    const flame = document.getElementById("engineFlame");
+    const flash = document.getElementById("softFlash");
 
-    setTimeout(()=>{
-        document.getElementById("softFlash").classList.add("flash-active");
-    },2300);
+    if (ship) ship.style.animation = "flyUp 3s ease-in-out forwards";
+    if (flame) flame.style.animation = "flameAnim 0.15s infinite alternate, flameMove 3s ease-in-out forwards";
+
+    setTimeout(() => {
+        if (flash) flash.classList.add("flash-active");
+    }, 2300);
 }
 
-document.addEventListener("click", launchSequence);
+function startGame() {
+    initAudio();
+    document.body.style.transition = "1s";
+    document.body.style.opacity = "0";
+    setTimeout(() => {
+        window.location.href = "menu.html";
+    }, 1000);
+}
+
+document.addEventListener("pointerdown", launchSequence, { once: true });
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+        launchSequence();
+    }
+});
+
+window.addEventListener("resize", () => {
+    resizeCanvas();
+    regenerateStars();
+});
+
+resizeCanvas();
+regenerateStars();
+drawBackground();
 </script>
 </body>
-<script>
-
-
-
-function initAudio(){
-    if(!audioCtx){
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if(audioCtx.state === "suspended"){
-        audioCtx.resume();
-    }
-}
-
-
-
-/* IMPORTANT : on déclenche le son au premier clic réel */
-document.addEventListener("click", function firstInteraction(){
-    initAudio();
-    playLaunchSound();
-    document.removeEventListener("click", firstInteraction);
-});
-</script>
 </html>

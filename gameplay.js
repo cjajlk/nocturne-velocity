@@ -1099,6 +1099,15 @@ let fireMode = isMobileDevice
   ? "autoTouch"
   : "holdAnywhere";
 
+function updateTouchTarget(touchEvent) {
+        const touch = touchEvent.touches && touchEvent.touches[0];
+        if (!touch) return;
+
+        const rect = canvas.getBoundingClientRect();
+        mouseTarget.x = Math.max(0, Math.min(canvas.width, touch.clientX - rect.left));
+        mouseTarget.y = Math.max(0, Math.min(canvas.height, touch.clientY - rect.top));
+}
+
 function startFire(){
   isFiring = true;
   isCharging = true;
@@ -1128,7 +1137,12 @@ window.addEventListener("mouseup", () => {
 // Mobile : tir auto au toucher du canvas si autoTouch
 canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
+    updateTouchTarget(e);
     if(fireMode === "autoTouch") startFire();
+}, { passive: false });
+canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    updateTouchTarget(e);
 }, { passive: false });
 canvas.addEventListener("touchend", (e) => {
     e.preventDefault();
@@ -1136,6 +1150,8 @@ canvas.addEventListener("touchend", (e) => {
 }, { passive: false });
 canvas.addEventListener("touchcancel", (e) => {
     e.preventDefault();
+    mouseTarget.x = null;
+    mouseTarget.y = null;
     if(fireMode === "autoTouch") stopFire();
 }, { passive: false });
 
