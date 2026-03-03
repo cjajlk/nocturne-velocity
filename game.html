@@ -21,6 +21,12 @@
   <div class="energy-bar">
     <div id="energyFill" class="energy-fill"></div>
   </div>
+  <div id="orientationLock" class="orientation-lock" aria-live="polite">
+    <div class="orientation-lock-card">
+      <strong>Mode portrait requis</strong>
+      <span>Tourne ton appareil en vertical pour jouer.</span>
+    </div>
+  </div>
   <canvas id="gameCanvas"></canvas>
   <button id="shootBtn" class="shoot-btn">🔫</button>
   <script src="gameplay.js"></script>
@@ -144,6 +150,42 @@
   transition: width 0.1s linear;
 }
 
+.orientation-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(2, 6, 12, 0.92);
+  backdrop-filter: blur(6px);
+}
+
+.orientation-lock-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 360px;
+  text-align: center;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 234, 255, 0.4);
+  background: rgba(8, 16, 30, 0.75);
+  color: #9cf6ff;
+  box-shadow: 0 0 22px rgba(0, 234, 255, 0.2);
+}
+
+.orientation-lock-card strong {
+  color: #00eaff;
+  font-size: 1.02rem;
+}
+
+.orientation-lock-card span {
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
 @keyframes flashAnim {
   0% { transform: scale(1); }
   50% { transform: scale(1.15); }
@@ -208,6 +250,12 @@
 
   .energy-bar {
     width: min(74vw, 210px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 640px) {
+  .orientation-lock {
+    display: flex;
   }
 }
   </style>

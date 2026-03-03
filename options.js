@@ -31,7 +31,8 @@
       hudScale: 100,
       textScale: 100,
       damageNumbers: true,
-      colorBlindMode: false
+      colorBlindMode: false,
+      fullscreen: false
     }
   };
 
@@ -131,6 +132,58 @@
     });
   }
 
+  function isFullscreenEnabled() {
+    return Boolean(document.fullscreenElement);
+  }
+
+  async function setFullscreenEnabled(enabled) {
+    try {
+      if (enabled) {
+        if (!isFullscreenEnabled() && document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+      } else if (isFullscreenEnabled() && document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function bindFullscreenToggle(groupName, key, buttonId) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+
+    const fullscreenSupported = Boolean(document.documentElement.requestFullscreen);
+
+    const sync = (enabled) => {
+      optionsState[groupName][key] = Boolean(enabled);
+      renderToggle(button, Boolean(enabled));
+      saveGroup(groupName);
+    };
+
+    if (!fullscreenSupported) {
+      button.disabled = true;
+      button.textContent = "N/A";
+      button.setAttribute("aria-pressed", "false");
+      button.classList.remove("is-on");
+      return;
+    }
+
+    sync(isFullscreenEnabled());
+
+    button.addEventListener("click", async () => {
+      const targetState = !Boolean(optionsState[groupName][key]);
+      const ok = await setFullscreenEnabled(targetState);
+      sync(ok ? targetState : isFullscreenEnabled());
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+      sync(isFullscreenEnabled());
+    });
+  }
+
   function bindAllControls() {
     bindSlider("audio", "masterVolume", "audio-masterVolume", "audio-masterVolume-value", (v) => `${v}%`);
     bindSlider("audio", "musicVolume", "audio-musicVolume", "audio-musicVolume-value", (v) => `${v}%`);
@@ -153,6 +206,7 @@
     bindSlider("ui", "textScale", "ui-textScale", "ui-textScale-value", (v) => `${v}%`);
     bindToggle("ui", "damageNumbers", "ui-damageNumbers");
     bindToggle("ui", "colorBlindMode", "ui-colorBlindMode");
+    bindFullscreenToggle("ui", "fullscreen", "ui-fullscreen");
   }
 
   let initialized = false;
