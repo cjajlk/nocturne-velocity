@@ -640,9 +640,10 @@ function triggerHyperBoost(){
 // ...existing code...
 function getShipSize(){
     const base = Math.min(canvas.width, canvas.height);
+    const mobileScale = isMobileDevice ? 1.2 : 1;
     return {
-        width: base * 0.09,
-        height: base * 0.13
+        width: base * 0.09 * mobileScale,
+        height: base * 0.13 * mobileScale
     };
 }
 // ============================
@@ -681,14 +682,21 @@ const ctx = canvas.getContext("2d");
 
 // --- Bouton retour vers le menu ---
 function createBackButton(){
+    const isMobileLayout = isMobileDevice;
+    const buttonSize = isMobileLayout ? 54 : 64;
+    const iconSize = isMobileLayout ? 40 : 48;
     const btn = document.createElement("div");
     btn.id = "backBtn";
-    btn.innerHTML = `<svg viewBox='0 0 48 48' width='48' height='48'><circle cx='24' cy='24' r='22' fill='rgba(0,255,255,0.95)'/><path d='M28 16l-8 8 8 8' stroke='#fff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>`;
+    btn.innerHTML = `<svg viewBox='0 0 48 48' width='${iconSize}' height='${iconSize}'><circle cx='24' cy='24' r='22' fill='rgba(0,255,255,0.95)'/><path d='M28 16l-8 8 8 8' stroke='#fff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>`;
     btn.style.position = "fixed";
-    btn.style.bottom = "32px";
-    btn.style.left = "32px";
-    btn.style.width = "64px";
-    btn.style.height = "64px";
+    btn.style.bottom = isMobileLayout
+        ? "calc(12px + env(safe-area-inset-bottom, 0px))"
+        : "32px";
+    btn.style.left = isMobileLayout
+        ? "12px"
+        : "32px";
+    btn.style.width = `${buttonSize}px`;
+    btn.style.height = `${buttonSize}px`;
     btn.style.borderRadius = "50%";
     btn.style.boxShadow = "0 0 30px rgba(0,255,255,0.7), 0 0 60px rgba(0,200,255,0.5)";
     btn.style.background = "radial-gradient(circle at 40% 40%, rgba(0,255,255,0.95), rgba(0,180,255,0.6), rgba(0,20,40,0.8))";
@@ -857,9 +865,7 @@ if (window.visualViewport) {
 let mouseTarget = { x: null, y: null };
 
 canvas.addEventListener("mousemove", function(e) {
-    const rect = canvas.getBoundingClientRect();
-    mouseTarget.x = Math.max(0, Math.min(canvas.width, e.clientX - rect.left));
-    mouseTarget.y = Math.max(0, Math.min(canvas.height, e.clientY - rect.top));
+    setTargetFromClient(e.clientX, e.clientY, false);
 });
 
 function lerp(a, b, t) {
@@ -1100,6 +1106,21 @@ let fireMode = isMobileDevice
   : "holdAnywhere";
 let activeTouchId = null;
 
+function getMobileTouchOffsetY() {
+    if (!isMobileDevice) return 0;
+    const shipSize = getShipSize();
+    const basedOnShip = shipSize.height * 1.05;
+    const basedOnScreen = canvas.height * 0.07;
+    return Math.max(68, Math.min(112, Math.max(basedOnShip, basedOnScreen)));
+}
+
+function setTargetFromClient(clientX, clientY, useMobileOffset = false) {
+        const rect = canvas.getBoundingClientRect();
+    const offsetY = useMobileOffset ? getMobileTouchOffsetY() : 0;
+        mouseTarget.x = Math.max(0, Math.min(canvas.width, clientX - rect.left));
+        mouseTarget.y = Math.max(0, Math.min(canvas.height, clientY - rect.top - offsetY));
+}
+
 function updateTouchTarget(touchEvent) {
     const touchList = touchEvent.touches || touchEvent.changedTouches;
     if (!touchList || touchList.length === 0) return;
@@ -1111,11 +1132,8 @@ function updateTouchTarget(touchEvent) {
     if (!touch) {
         touch = touchList[0];
     }
-        if (!touch) return;
-
-        const rect = canvas.getBoundingClientRect();
-        mouseTarget.x = Math.max(0, Math.min(canvas.width, touch.clientX - rect.left));
-        mouseTarget.y = Math.max(0, Math.min(canvas.height, touch.clientY - rect.top));
+    if (!touch) return;
+    setTargetFromClient(touch.clientX, touch.clientY, true);
 }
 
 function startFire(){
@@ -1183,20 +1201,16 @@ window.addEventListener("touchcancel", (e) => {
     if(fireMode === "autoTouch") stopFire();
 }, { passive: false });
 
-if (window.PointerEvent) {
+if (window.PointerEvent && !("ontouchstart" in window)) {
     canvas.addEventListener("pointerdown", (e) => {
         if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
-        const rect = canvas.getBoundingClientRect();
-        mouseTarget.x = Math.max(0, Math.min(canvas.width, e.clientX - rect.left));
-        mouseTarget.y = Math.max(0, Math.min(canvas.height, e.clientY - rect.top));
+        setTargetFromClient(e.clientX, e.clientY, true);
         if (fireMode === "autoTouch") startFire();
     });
 
     canvas.addEventListener("pointermove", (e) => {
         if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
-        const rect = canvas.getBoundingClientRect();
-        mouseTarget.x = Math.max(0, Math.min(canvas.width, e.clientX - rect.left));
-        mouseTarget.y = Math.max(0, Math.min(canvas.height, e.clientY - rect.top));
+        setTargetFromClient(e.clientX, e.clientY, true);
     });
 
     window.addEventListener("pointerup", (e) => {
@@ -2266,14 +2280,12 @@ function setGameplayHUDVisibility(visible) {
     const moduleHUD = document.getElementById("moduleHUD");
     const intensityHUD = document.getElementById("intensityHUD");
     const shootButton = document.getElementById("shootBtn");
-    const stellarTrigger = document.getElementById("stellarTrigger");
     const energyBar = document.querySelector(".energy-bar");
 
     if (hud) hud.style.display = display;
     if (moduleHUD) moduleHUD.style.display = display;
     if (intensityHUD) intensityHUD.style.display = display;
     if (shootButton) shootButton.style.display = display;
-    if (stellarTrigger) stellarTrigger.style.display = display;
     if (energyBar) energyBar.style.display = display;
 }
 

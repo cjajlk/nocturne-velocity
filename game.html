@@ -23,7 +23,6 @@
   </div>
   <canvas id="gameCanvas"></canvas>
   <button id="shootBtn" class="shoot-btn">🔫</button>
-  <div id="stellarTrigger"></div>
   <script src="gameplay.js"></script>
   <style>
   html, body, #gameCanvas {
@@ -34,10 +33,14 @@
     overscroll-behavior: none;
   }
 
+  :root {
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
 .shoot-btn{
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+  bottom: calc(18px + var(--safe-bottom));
+  right: clamp(16px, 2.4vw, 30px);
     width: 70px;
     height: 70px;
     border-radius: 50%;
@@ -51,43 +54,18 @@
     display: none; /* Par défaut caché, à afficher selon le mode */
     touch-action: manipulation;
 }
-#stellarTrigger{
-    position:absolute;
-    bottom:30px;
-    right:30px;
-    width:85px;
-    height:85px;
-    border-radius:50%;
-    background: radial-gradient(circle at 30% 30%, 
-        rgba(0,255,255,0.8),
-        rgba(80,0,255,0.6),
-        rgba(0,0,0,0.2)
-    );
-    box-shadow:
-        0 0 20px rgba(0,200,255,0.6),
-        0 0 40px rgba(120,0,255,0.4);
-    backdrop-filter: blur(4px);
-    transition: transform 0.1s ease, box-shadow 0.2s ease;
-    animation: stellarPulse 2s infinite ease-in-out;
-    z-index: 10;
-    touch-action: manipulation;
-}
-#stellarTrigger:active{
-    transform: scale(0.9);
-    box-shadow:
-        0 0 30px rgba(0,255,255,1),
-        0 0 60px rgba(180,0,255,0.8);
-}
 .module-hud {
-  position: absolute;
-  bottom: 25px;
-  left: 120px;
+  position: fixed;
+  bottom: calc(20px + var(--safe-bottom));
+  left: clamp(118px, 8.5vw, 156px);
+  transform: none;
 
   display: flex;
   align-items: center;
   gap: 10px;
 
   padding: 10px 18px;
+  min-width: 186px;
   border-radius: 14px;
 
   background: rgba(0, 0, 0, 0.55);
@@ -145,10 +123,10 @@
 
 .energy-bar {
   position: fixed;
-  bottom: 70px;
-  left: 25px;
+  bottom: calc(76px + var(--safe-bottom));
+  left: clamp(118px, 8.5vw, 156px);
 
-  width: 160px;
+  width: clamp(170px, 19vw, 250px);
   height: 10px;
 
   background: rgba(0,0,0,0.6);
@@ -171,10 +149,66 @@
   50% { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
-@keyframes stellarPulse{
-    0%{ box-shadow: 0 0 15px rgba(0,200,255,0.5), 0 0 35px rgba(120,0,255,0.3); }
-    50%{ box-shadow: 0 0 25px rgba(0,255,255,0.8), 0 0 55px rgba(160,0,255,0.5); }
-    100%{ box-shadow: 0 0 15px rgba(0,200,255,0.5), 0 0 35px rgba(120,0,255,0.3); }
+
+@media (min-width: 761px) {
+  .module-hud {
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 1400px) {
+  .module-hud {
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 240px;
+    justify-content: center;
+  }
+
+  .energy-bar {
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(300px, 28vw);
+  }
+}
+
+@media (max-width: 760px) {
+  .module-hud {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(10px + var(--safe-bottom));
+    padding: 8px 14px;
+    gap: 8px;
+    font-size: 0.95rem;
+    max-width: 74vw;
+    justify-content: center;
+  }
+
+  .energy-bar {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(56px + var(--safe-bottom));
+    width: min(68vw, 230px);
+    height: 9px;
+  }
+
+  .shoot-btn {
+    right: 14px;
+    width: 62px;
+    height: 62px;
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 420px) {
+  .module-hud {
+    font-size: 0.86rem;
+    max-width: 82vw;
+    padding: 7px 12px;
+  }
+
+  .energy-bar {
+    width: min(74vw, 210px);
+  }
 }
   </style>
 </body>
