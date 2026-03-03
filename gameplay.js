@@ -1098,9 +1098,19 @@ initDrones(dronePower);
 let fireMode = isMobileDevice
   ? "autoTouch"
   : "holdAnywhere";
+let activeTouchId = null;
 
 function updateTouchTarget(touchEvent) {
-        const touch = touchEvent.touches && touchEvent.touches[0];
+    const touchList = touchEvent.touches || touchEvent.changedTouches;
+    if (!touchList || touchList.length === 0) return;
+
+    let touch = null;
+    if (activeTouchId !== null) {
+        touch = Array.from(touchList).find((entry) => entry.identifier === activeTouchId) || null;
+    }
+    if (!touch) {
+        touch = touchList[0];
+    }
         if (!touch) return;
 
         const rect = canvas.getBoundingClientRect();
@@ -1137,23 +1147,72 @@ window.addEventListener("mouseup", () => {
 // Mobile : tir auto au toucher du canvas si autoTouch
 canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
+    const firstTouch = e.changedTouches && e.changedTouches[0];
+    if (firstTouch) {
+        activeTouchId = firstTouch.identifier;
+    }
     updateTouchTarget(e);
     if(fireMode === "autoTouch") startFire();
 }, { passive: false });
-canvas.addEventListener("touchmove", (e) => {
+
+window.addEventListener("touchmove", (e) => {
     e.preventDefault();
     updateTouchTarget(e);
 }, { passive: false });
-canvas.addEventListener("touchend", (e) => {
+
+window.addEventListener("touchend", (e) => {
     e.preventDefault();
-    if(fireMode === "autoTouch") stopFire();
+    const remainingTouches = e.touches || [];
+    if (remainingTouches.length > 0) {
+        activeTouchId = remainingTouches[0].identifier;
+        updateTouchTarget(e);
+        return;
+    }
+
+    activeTouchId = null;
+    mouseTarget.x = null;
+    mouseTarget.y = null;
+    if (fireMode === "autoTouch") stopFire();
 }, { passive: false });
-canvas.addEventListener("touchcancel", (e) => {
+
+window.addEventListener("touchcancel", (e) => {
     e.preventDefault();
+    activeTouchId = null;
     mouseTarget.x = null;
     mouseTarget.y = null;
     if(fireMode === "autoTouch") stopFire();
 }, { passive: false });
+
+if (window.PointerEvent) {
+    canvas.addEventListener("pointerdown", (e) => {
+        if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+        const rect = canvas.getBoundingClientRect();
+        mouseTarget.x = Math.max(0, Math.min(canvas.width, e.clientX - rect.left));
+        mouseTarget.y = Math.max(0, Math.min(canvas.height, e.clientY - rect.top));
+        if (fireMode === "autoTouch") startFire();
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+        if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+        const rect = canvas.getBoundingClientRect();
+        mouseTarget.x = Math.max(0, Math.min(canvas.width, e.clientX - rect.left));
+        mouseTarget.y = Math.max(0, Math.min(canvas.height, e.clientY - rect.top));
+    });
+
+    window.addEventListener("pointerup", (e) => {
+        if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+        mouseTarget.x = null;
+        mouseTarget.y = null;
+        if (fireMode === "autoTouch") stopFire();
+    });
+
+    window.addEventListener("pointercancel", (e) => {
+        if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+        mouseTarget.x = null;
+        mouseTarget.y = null;
+        if (fireMode === "autoTouch") stopFire();
+    });
+}
 
 // Bouton tir si manualButton
 const shootBtn = document.getElementById("shootBtn");
