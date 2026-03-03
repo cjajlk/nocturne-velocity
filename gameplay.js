@@ -1174,11 +1174,13 @@ canvas.addEventListener("touchstart", (e) => {
 }, { passive: false });
 
 window.addEventListener("touchmove", (e) => {
+    if (activeTouchId === null) return;
     e.preventDefault();
     updateTouchTarget(e);
 }, { passive: false });
 
 window.addEventListener("touchend", (e) => {
+    if (activeTouchId === null) return;
     e.preventDefault();
     const remainingTouches = e.touches || [];
     if (remainingTouches.length > 0) {
@@ -1194,6 +1196,7 @@ window.addEventListener("touchend", (e) => {
 }, { passive: false });
 
 window.addEventListener("touchcancel", (e) => {
+    if (activeTouchId === null) return;
     e.preventDefault();
     activeTouchId = null;
     mouseTarget.x = null;
