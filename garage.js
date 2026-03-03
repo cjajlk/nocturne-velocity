@@ -111,7 +111,12 @@ function loadProfile() {
         if (Array.isArray(profileData.ownedModules)) {
             profileData.ownedModules = profileData.ownedModules.map(moduleId => legacyModuleMap[moduleId] || moduleId);
             profileData.ownedModules = [...new Set(profileData.ownedModules)];
+        } else {
+            profileData.ownedModules = [];
         }
+
+        profileData.equippedModule = typeof profileData.equippedModule === "string" ? profileData.equippedModule : null;
+        profileData.credits = Number.isFinite(profileData.credits) ? profileData.credits : 0;
 
         const dronesState = createDefaultDronesState();
 
