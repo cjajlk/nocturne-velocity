@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nocturne Velocity</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin:0;
+    overflow:hidden;
+    background:black;
+    font-family:'Orbitron', sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:#00fff7;
+}
+
+/* Canvas background */
+#bgCanvas {
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:0;
+}
+
+/* Center content */
+.intro-container {
+    position:relative;
+    z-index:2;
+    text-align:center;
+}
+
+/* Title */
+.title {
+    font-size:4rem;
+    letter-spacing:6px;
+    text-shadow:
+        0 0 10px #00fff7,
+        0 0 20px #00fff7,
+        0 0 40px #00b7ff;
+    animation: fadeIn 2s ease forwards;
+    opacity:0;
+}
+
+/* Subtitle */
+.subtitle {
+    margin-top:20px;
+    font-size:1.2rem;
+    opacity:0;
+    animation: fadeIn 2s ease forwards;
+    animation-delay:1.5s;
+}
+
+/* Button */
+.play-btn {
+    margin-top:60px;
+    padding:16px 60px;
+    font-size:1.4rem;
+    background:transparent;
+    border:2px solid #00fff7;
+    color:#00fff7;
+    cursor:pointer;
+    transition:0.3s;
+    text-shadow:0 0 10px #00fff7;
+    animation: pulse 2s infinite;
+}
+
+.play-btn:hover {
+    background:#00fff7;
+    color:black;
+    box-shadow:0 0 25px #00fff7;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    to { opacity:1; }
+}
+
+@keyframes pulse {
+    0% { box-shadow:0 0 10px #00fff7; }
+    50% { box-shadow:0 0 25px #00fff7; }
+    100% { box-shadow:0 0 10px #00fff7; }
+}
+</style>
+</head>
+
+<body>
+
+
+<canvas id="bgCanvas"></canvas>
+
+<img id="shipIntro" src="assets/vaisseau/vaisseau1.png">
+<div id="engineFlame"></div>
+<div id="softFlash"></div>
+
+<div class="intro-container">
+    <div class="title" id="title">NOCTURNE VELOCITY</div>
+    <div class="subtitle">Traverse l'infini. Survis à la vitesse.</div>
+    <button class="play-btn" id="playBtn" onclick="startGame()">ENTRER</button>
+</div>
+
+<style>
+
+/* Vaisseau */
+#shipIntro{
+    position:absolute;
+    width:180px;
+    left:50%;
+    bottom:-250px;
+    transform:translateX(-50%);
+    z-index:3;
+    filter:drop-shadow(0 0 25px #00fff7);
+    /* animation: flyUp 3s ease-in-out forwards; */
+}
+
+/* Flamme moteur */
+#engineFlame{
+    position:absolute;
+    width:20px;
+    height:80px;
+    left:50%;
+    bottom:-260px;
+    transform:translateX(-50%);
+    background:linear-gradient(to top,
+        rgba(0,255,247,0.9),
+        rgba(0,183,255,0.6),
+        transparent);
+    filter:blur(6px);
+    border-radius:50%;
+    /* animation: flameAnim 0.15s infinite alternate, flameMove 3s ease-in-out forwards; */
+}
+
+/* Traînée lumineuse */
+#engineFlame::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:4px;
+    height:200px;
+    bottom:-180px;
+    background:linear-gradient(to top,
+        rgba(0,255,247,0.6),
+        transparent);
+    filter:blur(4px);
+}
+
+@keyframes flameAnim{
+    0%{height:70px; opacity:0.8;}
+    100%{height:95px; opacity:1;}
+}
+
+@keyframes flameMove{
+    0%{bottom:-260px;}
+    100%{bottom:120%;}
+}
+
+@keyframes flyUp{
+    0%{
+        bottom:-250px;
+        transform:translateX(-50%) scale(0.7);
+        opacity:0.8;
+    }
+    40%{
+        bottom:45%;
+        transform:translateX(-50%) scale(1.1);
+    }
+    100%{
+        bottom:120%;
+        transform:translateX(-50%) scale(0.85);
+    }
+}
+
+.title{
+    opacity:0;
+    animation: fadeInTitle 1.5s ease forwards;
+    animation-delay:2.5s;
+}
+
+.play-btn{
+    opacity:0;
+    pointer-events:none;
+    animation: fadeInBtn 1.5s ease forwards;
+    animation-delay:3.5s;
+}
+
+@keyframes fadeInTitle{
+    to{opacity:1;}
+}
+
+@keyframes fadeInBtn{
+    to{
+        opacity:1;
+        pointer-events:auto;
+    }
+}
+</style>
+
+<script>
+/* transition vers le menu */
+function startGame(){
+    if(window.audioCtx && audioCtx.state === "suspended"){
+        audioCtx.resume();
+    }
+    document.body.style.transition="1s";
+    document.body.style.opacity="0";
+    setTimeout(()=>{
+        window.location.href="menu.html";
+    },1000);
+}
+</script>
+
+</body>
+<script>
+let audioCtx;
+let launched = false;
+
+function initAudio(){
+    if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === "suspended"){
+        audioCtx.resume();
+    }
+}
+
+function playLaunchSound(){
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "square";
+    osc.frequency.value = 120;
+    gain.gain.value = 0.25;
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 2);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.5);
+    osc.stop(audioCtx.currentTime + 2.5);
+}
+
+function launchSequence(){
+    if(launched) return;
+    launched = true;
+
+    initAudio();
+    playLaunchSound();
+
+    document.getElementById("shipIntro").style.animation = "flyUp 3s ease-in-out forwards";
+    document.getElementById("engineFlame").style.animation =
+        "flameAnim 0.15s infinite alternate, flameMove 3s ease-in-out forwards";
+
+    setTimeout(()=>{
+        document.getElementById("softFlash").classList.add("flash-active");
+    },2300);
+}
+
+document.addEventListener("click", launchSequence);
+</script>
+</body>
+<script>
+
+
+
+function initAudio(){
+    if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === "suspended"){
+        audioCtx.resume();
+    }
+}
+
+
+
+/* IMPORTANT : on déclenche le son au premier clic réel */
+document.addEventListener("click", function firstInteraction(){
+    initAudio();
+    playLaunchSound();
+    document.removeEventListener("click", firstInteraction);
+});
+</script>
+</html>

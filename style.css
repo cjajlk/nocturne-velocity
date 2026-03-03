@@ -1,0 +1,135 @@
+#orientationBlock{
+  position:fixed;
+  inset:0;
+  background:black;
+  color:#00fff7;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-family:'Orbitron', sans-serif;
+  font-size:20px;
+  z-index:9999;
+}
+
+.rotateMessage{
+  padding:20px;
+}
+/* HUD premium (moins arcade) */
+#hud{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 10px 14px 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  z-index: 50;
+  /* glass ultra léger */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 255, 255, 0.08),
+    rgba(10, 0, 20, 0.02) 55%,
+    rgba(0,0,0,0) 100%
+  );
+  backdrop-filter: blur(6px);
+}
+
+/* La "ligne" du haut devient fine et élégante */
+#hud::before{
+  content:"";
+  position:absolute;
+  left: 12px; right: 12px; top: 10px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(0,255,255,0),
+    rgba(0,255,255,0.65),
+    rgba(160,0,255,0.25),
+    rgba(0,255,255,0.65),
+    rgba(0,255,255,0)
+  );
+  box-shadow: 0 0 10px rgba(0,255,255,0.22);
+  opacity: 0.9;
+}
+/* Texte plus calme, glow réduit */
+.hudLabel, #scoreHud, #levelHud, #creditsHud{
+  color: rgba(200, 255, 255, 0.92);
+  text-shadow: 0 0 10px rgba(0,255,255,0.18);
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+/* Valeurs un poil plus visibles */
+#scoreCount, #levelCount, #creditCount{
+  display: inline-block;
+  margin-top: 4px;
+  color: rgba(230,255,255,0.95);
+  text-shadow: 0 0 12px rgba(0,255,255,0.22);
+  font-size: 20px;
+}
+
+/* Boutique plus petite, plus "UI" */
+#shopBtn, .shopBtn, #btnShop{
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,255,255,0.25);
+  background: rgba(0, 20, 30, 0.25);
+  color: rgba(220,255,255,0.92);
+  text-shadow: 0 0 10px rgba(0,255,255,0.18);
+  box-shadow: 0 0 16px rgba(0,255,255,0.12);
+  font-size: 16px;
+}
+#levelHud {
+  font-size: 1.1em;
+  margin: 0 0.1em;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+/* ...le style .hudLabel est inclus plus haut */
+#scoreHud.hit {
+  transform: scale(1.25);
+  text-shadow: 0 0 24px #00ffff, 0 0 48px #00e0ff;
+}
+/* Mobile : on réduit encore pour respirer */
+@media (max-width: 480px){
+  #hud{ padding: 8px 10px 6px; }
+  .hudLabel, #scoreHud, #levelHud, #creditsHud{ font-size: 15px; }
+  #scoreCount, #levelCount, #creditCount{ font-size: 16px; }
+}
+html, body {
+  background: #111;
+  color: #00fff7;
+  font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#gameCanvas {
+  background: #000;
+  border: 2px solid #00fff7;
+  box-shadow: 0 0 20px #00fff7;
+  margin-top: 30px;
+  /* width et height supprimés pour laisser le JS gérer la taille réelle */
+}
+#credits {
+  margin-top: 10px;
+  font-size: 1.2em;
+  letter-spacing: 2px;
+}
+
+body.hardcore {
+  filter: hue-rotate(10deg) brightness(0.9);
+}
+
+body.hardcore .hud-title {
+  color: #a855f7;
+}

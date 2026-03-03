@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nocturne Velocity</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+  <div id="hud">
+    <div id="scoreHud"><span class="hudLabel">Score</span><br><span id="scoreCount">0</span></div>
+    <div id="levelHud" class="hud-title">Niveau<br><span id="levelCount">1</span></div>
+    <div id="creditsHud"><span class="hudLabel">Crédits</span><br><span id="creditCount">0</span></div>
+  </div>
+  <div id="moduleHUD" class="module-hud">
+    <span id="moduleIcon">⚡</span>
+    <span id="moduleName">FLUX</span>
+  </div>
+  <div id="intensityHUD" class="intensity-hud">INTENSITÉ x1.0</div>
+  <div class="energy-bar">
+    <div id="energyFill" class="energy-fill"></div>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+  <button id="shootBtn" class="shoot-btn">🔫</button>
+  <div id="stellarTrigger"></div>
+  <script src="gameplay.js"></script>
+  <style>
+  html, body, #gameCanvas {
+    touch-action: none;
+  }
+
+  body {
+    overscroll-behavior: none;
+  }
+
+.shoot-btn{
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 24px;
+    z-index: 10;
+    border: none;
+    outline: none;
+    box-shadow: 0 0 10px #00fff7;
+    display: none; /* Par défaut caché, à afficher selon le mode */
+    touch-action: manipulation;
+}
+#stellarTrigger{
+    position:absolute;
+    bottom:30px;
+    right:30px;
+    width:85px;
+    height:85px;
+    border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, 
+        rgba(0,255,255,0.8),
+        rgba(80,0,255,0.6),
+        rgba(0,0,0,0.2)
+    );
+    box-shadow:
+        0 0 20px rgba(0,200,255,0.6),
+        0 0 40px rgba(120,0,255,0.4);
+    backdrop-filter: blur(4px);
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    animation: stellarPulse 2s infinite ease-in-out;
+    z-index: 10;
+    touch-action: manipulation;
+}
+#stellarTrigger:active{
+    transform: scale(0.9);
+    box-shadow:
+        0 0 30px rgba(0,255,255,1),
+        0 0 60px rgba(180,0,255,0.8);
+}
+.module-hud {
+  position: absolute;
+  bottom: 25px;
+  left: 120px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 18px;
+  border-radius: 14px;
+
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+
+  font-weight: bold;
+  letter-spacing: 1px;
+  z-index: 101;
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+
+  animation: glowPulse 3s infinite ease-in-out;
+}
+
+.module-hud.flux {
+  color: #00eaff;
+  box-shadow: 0 0 20px rgba(0, 234, 255, 0.6);
+}
+
+.module-hud.impact {
+  color: #ff4cff;
+  box-shadow: 0 0 20px rgba(255, 76, 255, 0.6);
+}
+
+.module-hud.resonance {
+  color: #b84cff;
+  box-shadow: 0 0 22px rgba(184, 76, 255, 0.75);
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 15px rgba(0,255,255,0.4); }
+  50% { box-shadow: 0 0 30px rgba(0,255,255,0.8); }
+  100% { box-shadow: 0 0 15px rgba(0,255,255,0.4); }
+}
+
+.module-hud.flash {
+  animation: flashAnim 0.4s ease;
+}
+
+.intensity-hud {
+  position: fixed;
+  top: 58px;
+  right: 24px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #00eaff;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 0 12px rgba(0, 234, 255, 0.35);
+  z-index: 101;
+  pointer-events: none;
+}
+
+.energy-bar {
+  position: fixed;
+  bottom: 70px;
+  left: 25px;
+
+  width: 160px;
+  height: 10px;
+
+  background: rgba(0,0,0,0.6);
+  border-radius: 6px;
+  overflow: hidden;
+
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
+  z-index: 101;
+}
+
+.energy-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #00eaff, #00ff88);
+  transition: width 0.1s linear;
+}
+
+@keyframes flashAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+@keyframes stellarPulse{
+    0%{ box-shadow: 0 0 15px rgba(0,200,255,0.5), 0 0 35px rgba(120,0,255,0.3); }
+    50%{ box-shadow: 0 0 25px rgba(0,255,255,0.8), 0 0 55px rgba(160,0,255,0.5); }
+    100%{ box-shadow: 0 0 15px rgba(0,200,255,0.5), 0 0 35px rgba(120,0,255,0.3); }
+}
+  </style>
+</body>
+</html>

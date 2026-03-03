@@ -1,0 +1,350 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  background: radial-gradient(ellipse at top, rgba(88, 28, 135, 0.18), transparent 48%), #09080f;
+  color: #d7d4e7;
+  font-family: 'Orbitron', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.profile-shell {
+  width: min(980px, 94vw);
+  margin: 24px auto;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 16px;
+  background: rgba(10, 9, 19, 0.88);
+  box-shadow: 0 0 24px rgba(101, 37, 150, 0.18);
+  overflow: hidden;
+}
+
+.profile-header {
+  display: grid;
+  grid-template-columns: 140px 1fr 140px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+  background: linear-gradient(to bottom, rgba(33, 20, 52, 0.35), rgba(12, 9, 20, 0));
+}
+
+.profile-header h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+  color: #c9b9f7;
+}
+
+.player-name-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.player-name-label {
+  color: #ab9fcf;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+}
+
+.player-name-display {
+  color: #f0ecff;
+  font-size: 0.95rem;
+}
+
+.name-btn {
+  padding: 5px 8px;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 8px;
+  background: rgba(62, 23, 89, 0.3);
+  color: #ece9ff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  min-height: 30px;
+}
+
+.name-btn:hover {
+  background: rgba(101, 37, 150, 0.42);
+}
+
+.name-btn:focus-visible,
+.back-btn:focus-visible,
+.tab-btn:focus-visible,
+.name-input:focus-visible {
+  outline: 2px solid rgba(196, 144, 248, 0.7);
+  outline-offset: 2px;
+}
+
+.name-btn.ghost {
+  background: rgba(18, 14, 30, 0.6);
+}
+
+.name-editor {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.name-editor.hidden {
+  display: none;
+}
+
+.name-input {
+  width: 120px;
+  padding: 5px 7px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  background: rgba(15, 12, 25, 0.9);
+  color: #f2eefe;
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+
+.name-error {
+  min-height: 14px;
+  color: #f7a8d8;
+  font-size: 0.65rem;
+}
+
+.back-btn {
+  padding: 8px 10px;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  border-radius: 10px;
+  color: #ece9ff;
+  background: rgba(62, 23, 89, 0.35);
+  cursor: pointer;
+  min-height: 34px;
+}
+
+.back-btn:hover {
+  background: rgba(101, 37, 150, 0.45);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border: 1px solid rgba(168, 85, 247, 0.32);
+  border-radius: 10px;
+  background: rgba(31, 17, 46, 0.55);
+  color: #ded5ff;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  min-height: 42px;
+}
+
+.tab-btn.active {
+  background: rgba(108, 48, 155, 0.35);
+  border-color: rgba(196, 144, 248, 0.72);
+  color: #f2eefe;
+  box-shadow: 0 0 14px rgba(157, 92, 229, 0.2);
+}
+
+.tab-panels {
+  padding: 14px;
+}
+
+.tab-panel {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  border-radius: 12px;
+  background: rgba(18, 14, 30, 0.7);
+}
+
+.item span {
+  color: #bdb5db;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  flex: 1;
+  min-width: 0;
+}
+
+.item strong {
+  color: #f0ecff;
+  font-size: 0.95rem;
+  text-align: right;
+  max-width: 52%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cj-footer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 14px 12px;
+  border-top: 1px solid rgba(168, 85, 247, 0.2);
+  color: #aca2ce;
+  font-size: 0.75rem;
+}
+
+.cj-title {
+  color: #b999f4;
+}
+
+.cj-value {
+  color: #ece3ff;
+}
+
+@media (max-width: 760px) {
+  .profile-shell {
+    margin: 10px auto;
+    width: 96vw;
+    border-radius: 14px;
+  }
+
+  .profile-header {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "back title"
+      "name name";
+    align-items: center;
+    gap: 8px 10px;
+    padding: 10px 12px;
+  }
+
+  .back-btn {
+    grid-area: back;
+    justify-self: start;
+    padding: 6px 9px;
+    font-size: 0.72rem;
+  }
+
+  .profile-header h1 {
+    grid-area: title;
+    justify-self: center;
+    font-size: 1.02rem;
+    letter-spacing: 1px;
+  }
+
+  .player-name-box {
+    grid-area: name;
+    align-items: flex-start;
+    width: 100%;
+    gap: 4px;
+  }
+
+  .player-name-display {
+    font-size: 0.86rem;
+  }
+
+  .name-btn {
+    font-size: 0.66rem;
+    padding: 5px 7px;
+  }
+
+  .name-input {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.72rem;
+  }
+
+  .name-editor {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .name-editor .name-btn {
+    flex: 0 0 auto;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 12px 9px;
+  }
+
+  .tab-btn {
+    min-width: 0;
+    width: 100%;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .tab-panels {
+    padding: 10px 12px;
+  }
+
+  .item {
+    padding: 10px 11px;
+    gap: 10px;
+  }
+
+  .item span {
+    font-size: 0.76rem;
+  }
+
+  .item strong {
+    font-size: 0.83rem;
+    max-width: 46%;
+  }
+
+  .cj-footer {
+    padding: 9px 12px 11px;
+    font-size: 0.7rem;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+}
+
+@media (max-width: 390px) {
+  .profile-shell {
+    width: 97vw;
+  }
+
+  .profile-header h1 {
+    font-size: 0.95rem;
+  }
+
+  .tab-btn {
+    font-size: 0.68rem;
+    letter-spacing: 0.3px;
+  }
+}

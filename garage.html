@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garage - Nocturne Velocity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="garage.css">
+    <link rel="stylesheet" href="footer.css">
+</head>
+
+<body>
+    <div class="garage-header">
+        <div class="garage-left">
+            <button id="backToMenu" class="back-btn">← Menu</button>
+        </div>
+
+        <div class="garage-center">
+            <h1>GARAGE</h1>
+        </div>
+
+        <div class="garage-right">
+            <div id="creditsDisplay" class="credits-box"></div>
+        </div>
+    </div>
+
+    <div class="garage-content">
+        <div class="garage-tabs">
+            <button class="tab-btn active" data-tab="modules">Modules</button>
+            <button class="tab-btn" data-tab="drones">Drones</button>
+            <button class="tab-btn" data-tab="ship">Vaisseau</button>
+        </div>
+
+        <div id="modules" class="tab-content active"></div>
+        <div id="drones" class="tab-content"></div>
+        <div id="ship" class="tab-content"></div>
+    </div>
+
+    <div id="nv-popup" class="nv-popup">
+        <div class="nv-popup-content">
+            <h3 id="nv-popup-title"></h3>
+            <p id="nv-popup-message"></p>
+            <button id="nv-popup-btn">OK</button>
+        </div>
+    </div>
+
+    <div data-game-footer></div>
+</body>
+<script src="footer.js"></script>
+<script src="garage.js"></script>
+</html>

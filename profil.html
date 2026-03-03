@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nocturne Velocity - Profil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="profile.css" />
+  <link rel="stylesheet" href="footer.css" />
+</head>
+<body>
+  <div class="profile-shell">
+    <header class="profile-header">
+      <button id="backToMenu" class="back-btn">← Menu</button>
+      <h1>PROFIL</h1>
+      <div class="player-name-box">
+        <span class="player-name-label">Pilote</span>
+        <strong id="playerNameDisplay" class="player-name-display">Pilote</strong>
+        <button id="editNameBtn" class="name-btn" type="button">Modifier</button>
+        <div id="nameEditor" class="name-editor hidden">
+          <input id="playerNameInput" class="name-input" type="text" maxlength="16" placeholder="Ton pseudo" />
+          <button id="saveNameBtn" class="name-btn" type="button">OK</button>
+          <button id="cancelNameBtn" class="name-btn ghost" type="button">Annuler</button>
+        </div>
+        <small id="nameError" class="name-error"></small>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Onglets profil">
+      <button class="tab-btn active" data-tab="stats">Stats</button>
+      <button class="tab-btn" data-tab="combat">Combat</button>
+      <button class="tab-btn" data-tab="prestige">Prestige</button>
+      <button class="tab-btn" data-tab="equipement">Équipement</button>
+    </nav>
+
+    <main class="tab-panels">
+      <section id="tab-stats" class="tab-panel active" aria-live="polite">
+        <div class="grid">
+          <div class="item"><span>Meilleur score Normal</span><strong id="stat-bestScore">0</strong></div>
+          <div class="item"><span>Meilleur score Hardcore</span><strong id="stat-bestScoreHardcore">0</strong></div>
+          <div class="item"><span>Monde max atteint</span><strong id="stat-worldsReached">0</strong></div>
+          <div class="item"><span>Monde max Hardcore</span><strong id="stat-worldsReachedHardcore">0</strong></div>
+          <div class="item"><span>Combo max</span><strong id="stat-comboMax">0</strong></div>
+          <div class="item"><span>Intensité max</span><strong id="stat-intensityMax">x0.0</strong></div>
+          <div class="item"><span>Runs totales</span><strong id="stat-totalRuns">0</strong></div>
+        </div>
+      </section>
+
+      <section id="tab-combat" class="tab-panel" aria-live="polite">
+        <div class="grid">
+          <div class="item"><span>Total ennemis détruits</span><strong id="combat-enemiesDestroyed">0</strong></div>
+          <div class="item"><span>Total boss vaincus</span><strong id="combat-bossesKilled">0</strong></div>
+          <div class="item"><span>Tirs tirés</span><strong id="combat-shotsFired">0</strong></div>
+          <div class="item"><span>Précision (%)</span><strong id="combat-precision">0%</strong></div>
+          <div class="item"><span>Dégâts reçus</span><strong id="combat-damageTaken">0</strong></div>
+          <div class="item"><span>Boucliers activés</span><strong id="combat-shieldUsed">0</strong></div>
+          <div class="item"><span>Laser utilisé</span><strong id="combat-laserUsed">0</strong></div>
+        </div>
+      </section>
+
+      <section id="tab-prestige" class="tab-panel" aria-live="polite">
+        <div class="grid">
+          <div class="item"><span>Hardcore débloqué</span><strong id="prestige-hardcoreUnlocked">Non</strong></div>
+          <div class="item"><span>Hardcore terminé</span><strong id="prestige-hardcoreCompleted">Non</strong></div>
+          <div class="item"><span>Date première victoire Hardcore</span><strong id="prestige-firstHardcoreWinDate">—</strong></div>
+          <div class="item"><span>Score record Hardcore</span><strong id="prestige-scoreRecordHardcore">0</strong></div>
+          <div class="item"><span>Badge / Halo actif</span><strong id="prestige-haloActive">Inactif</strong></div>
+        </div>
+      </section>
+
+      <section id="tab-equipement" class="tab-panel" aria-live="polite">
+        <div class="grid">
+          <div class="item"><span>Drone niveau max</span><strong id="equip-droneMaxLevel">0</strong></div>
+          <div class="item"><span>Modules débloqués</span><strong id="equip-modulesUnlocked">0</strong></div>
+          <div class="item"><span>Overclock</span><strong id="equip-overclock">Verrouillé</strong></div>
+          <div class="item"><span>Équipement actif</span><strong id="equip-activeLoadout">Aucun</strong></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="cj-footer">
+      <span class="cj-title">CJ Global</span>
+      <span class="cj-value" id="cj-balance">0 CJ</span>
+      <span class="cj-status" id="cj-status">isolé (préparation)</span>
+    </footer>
+  </div>
+
+  <div data-game-footer></div>
+
+  <script src="footer.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>

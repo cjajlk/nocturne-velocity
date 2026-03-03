@@ -1,0 +1,16 @@
+# Node (si jamais un jour)
+node_modules/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build éventuel
+dist/

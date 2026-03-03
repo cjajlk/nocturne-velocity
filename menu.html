@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nocturne Velocity - Menu</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="options.css">
+<link rel="stylesheet" href="footer.css">
+
+<style>
+
+body{
+    margin:0;
+    overflow:hidden;
+    font-family:'Orbitron',sans-serif;
+    color:#00fff7;
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(60, 20, 120, 0.45) 0%,
+            rgba(20, 10, 50, 0.6) 45%,
+            #000 75%
+        ),
+        #000;
+}
+
+/* Icônes en bas */
+.bottom-icon{
+    position:fixed;
+    bottom:35px;
+    width:40px;
+    height:40px;
+    cursor:pointer;
+    z-index:3;
+    transition:0.3s ease;
+}
+.bottom-icon.left{ left:40px; }
+.bottom-icon.right{ right:40px; }
+
+.icon{
+    width:100%;
+    height:100%;
+    fill:#00fff7;
+    filter:drop-shadow(0 0 8px #00fff7);
+    transition:0.3s ease;
+}
+
+.bottom-icon:hover .icon{
+    transform:scale(1.2);
+    filter:
+        drop-shadow(0 0 15px #00fff7)
+        drop-shadow(0 0 30px #00b7ff);
+}
+
+/* Fond étoilé */
+canvas{
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:0;
+        background: transparent;
+    }
+
+/* Container principal */
+.menu-container{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) perspective(800px) rotateX(8deg);
+    text-align:center;
+    z-index:2;
+    width:min(92vw, 760px);
+}
+
+.cosmic-planet{
+    position: fixed;
+    width: min(78vw, 980px);
+    height: min(78vw, 980px);
+    top: -6vh;
+    right: -2vw;
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.15;
+    filter: blur(0.55px);
+    background:
+        radial-gradient(
+            circle at 44% 46%,
+            rgba(18, 8, 31, 0.98) 0%,
+            rgba(23, 12, 40, 0.94) 38%,
+            rgba(36, 18, 58, 0.74) 67%,
+            rgba(62, 26, 98, 0.42) 100%
+        );
+    box-shadow:
+        0 0 120px rgba(145, 72, 255, 0.24),
+        0 0 260px rgba(145, 72, 255, 0.13),
+        inset 0 0 62px rgba(179, 108, 255, 0.14);
+    animation: planetRotate 140s linear infinite;
+    transform-origin: 50% 50%;
+}
+
+@media (max-width: 768px) {
+    .cosmic-planet{
+        width: 120vw;
+        height: 120vw;
+        top: -16vh;
+        right: -28vw;
+        opacity: 0.12;
+        filter: blur(0.7px);
+    }
+}
+
+.cosmic-planet::before{
+    content: "";
+    position: absolute;
+    inset: -2%;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(100, 38, 170, 0) 56%,
+        rgba(139, 66, 224, 0.24) 80%,
+        rgba(139, 66, 224, 0.1) 100%
+    );
+}
+
+.cosmic-planet::after{
+    content: "";
+    position: absolute;
+    inset: 2.6%;
+    border-radius: 50%;
+    border: 1px solid rgba(170, 98, 255, 0.36);
+    box-shadow: 0 0 52px rgba(170, 98, 255, 0.22);
+}
+
+@keyframes planetRotate{
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Logo */
+.logo{
+    font-size:clamp(2.2rem, 7vw, 3.5rem);
+    letter-spacing:clamp(3px, 0.9vw, 8px);
+    margin-bottom:clamp(34px, 8vh, 70px);
+    opacity:0;
+    animation: fadeLogo 1.8s ease forwards;
+    text-shadow:
+        0 0 12px #00fff7,
+        0 0 28px #00b7ff,
+        0 0 60px rgba(0,255,247,0.3);
+}
+
+@keyframes fadeLogo{
+    from{
+        opacity:0;
+        transform:translateY(30px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* Boutons */
+.menu-btn{
+    display:block;
+    margin:clamp(14px, 2.8vh, 28px) 0;
+    font-size:clamp(1.25rem, 3.8vw, 1.7rem);
+    letter-spacing:clamp(2px, 0.6vw, 4px);
+    cursor:pointer;
+    opacity:0;
+    animation: fadeMenu 1.5s ease forwards;
+    transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.menu-btn:nth-child(2){ animation-delay:0.8s; }
+.menu-btn:nth-child(3){ animation-delay:1s; }
+.menu-btn:nth-child(4){ animation-delay:1.2s; }
+.menu-btn:nth-child(5){ animation-delay:1.4s; }
+
+@keyframes fadeMenu{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.menu-btn:hover{
+    transform:scale(1.08);
+    text-shadow:
+        0 0 15px #00fff7,
+        0 0 35px #00b7ff;
+}
+
+.player-badge{
+    position: fixed;
+    top: clamp(10px, 2.2vh, 18px);
+    right: clamp(10px, 2.2vw, 22px);
+    z-index: 8;
+    padding: clamp(5px, 1vh, 7px) clamp(8px, 1.5vw, 12px);
+    border-radius: 10px;
+    border: 1px solid rgba(168, 85, 247, 0.42);
+    background: rgba(22, 10, 40, 0.46);
+    color: #e9deff;
+    font-size: clamp(0.62rem, 1.9vw, 0.75rem);
+    letter-spacing: 1px;
+    box-shadow: 0 0 14px rgba(131, 64, 193, 0.24);
+    pointer-events: none;
+}
+
+/* Bouton Cœur Stellaire (stellarTrigger) */
+#stellarTrigger{
+    position:absolute;
+    bottom:30px;
+    right:30px;
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background: radial-gradient(circle at 40% 40%, 
+        rgba(0,255,255,0.8),
+        rgba(80,0,255,0.6),
+        rgba(10,10,20,0.8)
+    );
+    box-shadow:
+        0 0 25px rgba(0,255,255,0.7),
+        0 0 60px rgba(140,0,255,0.5);
+    overflow:hidden;
+    z-index:10;
+    cursor:pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+#stellarTrigger::before{
+    content:"";
+    position:absolute;
+    top:-5px;
+    left:-5px;
+    width:100px;
+    height:100px;
+        background: radial-gradient(circle at 40% 40%, 
+            rgba(0,255,255,0.95),
+            rgba(0,180,255,0.6),
+            rgba(0,20,40,0.8)
+        );
+        box-shadow:
+            0 0 30px rgba(0,255,255,1),
+            0 0 60px rgba(0,200,255,0.7);
+    to{ transform: rotate(360deg); }
+}
+
+#stellarTrigger:active{
+    transform: scale(0.9);
+    box-shadow:
+        0 0 40px rgba(0,255,255,1),
+        0 0 80px rgba(180,0,255,0.9);
+}
+
+@media (max-width: 1024px) {
+    .menu-container{
+        width: min(94vw, 680px);
+        transform: translate(-50%,-50%) perspective(700px) rotateX(6deg);
+    }
+
+    .bottom-icon{
+        width: 36px;
+        height: 36px;
+    }
+
+    .bottom-icon.left{ left: 22px; }
+    .bottom-icon.right{ right: 22px; }
+}
+
+@media (max-width: 640px) {
+    .menu-container{
+        width: 92vw;
+        transform: translate(-50%,-50%) perspective(620px) rotateX(5deg);
+        top: 52%;
+    }
+
+    .logo{
+        line-height: 1.05;
+    }
+
+    .menu-btn{
+        padding: 2px 0;
+    }
+
+    .bottom-icon{
+        bottom: 18px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .bottom-icon.left{ left: 14px; }
+    .bottom-icon.right{ right: 14px; }
+
+    .player-badge{
+        max-width: 54vw;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+<div class="cosmic-planet" aria-hidden="true"></div>
+<div id="playerBadge" class="player-badge">Pilote : Pilote</div>
+
+<div class="menu-container">
+    <div class="logo">NOCTURNE VELOCITY</div>
+    <div class="menu-btn" onclick="startNormalGame()">JOUER</div>
+    <div class="menu-btn" onclick="goTo('garage.html')">GARAGE</div>
+    <div id="hardcoreBtn" class="menu-btn" onclick="startHardcoreGame()" style="display:none;">HARDCORE</div>
+</div>
+
+<div id="optionsTrigger" class="bottom-icon left" onclick="openOptionsOverlay()" role="button" tabindex="0" aria-label="Ouvrir les options">
+    <!-- Gear -->
+    <svg viewBox="0 0 24 24" class="icon">
+        <path d="M12 8a4 4 0 100 8 4 4 0 000-8zm9 4a7.94 7.94 0 00-.34-2l2.12-1.65-2-3.46-2.49 1a8.05 8.05 0 00-3.46-2L14 1h-4l-.83 2.89a8.05 8.05 0 00-3.46 2l-2.49-1-2 3.46L3.34 10a7.94 7.94 0 000 4l-2.12 1.65 2 3.46 2.49-1a8.05 8.05 0 003.46 2L10 23h4l.83-2.89a8.05 8.05 0 003.46-2l2.49 1 2-3.46L20.66 14c.22-.64.34-1.31.34-2z"/>
+    </svg>
+</div>
+
+<div class="bottom-icon right" onclick="goTo('profil.html')">
+    <!-- Astronaut Helmet -->
+    <svg viewBox="0 0 24 24" class="icon">
+        <path d="M12 2a8 8 0 00-8 8v3a5 5 0 005 5h1v2h4v-2h1a5 5 0 005-5v-3a8 8 0 00-8-8zm0 2a6 6 0 016 6v2H6v-2a6 6 0 016-6z"/>
+    </svg>
+</div>
+
+<div id="optionsOverlay" class="options-overlay" aria-hidden="true" inert>
+    <div class="profile-shell options-shell" role="dialog" aria-modal="true" aria-labelledby="optionsTitle">
+        <header class="profile-header options-header">
+            <button id="closeOptionsBtn" class="back-btn">← Retour</button>
+            <h1 id="optionsTitle">OPTIONS</h1>
+            <div class="header-spacer"></div>
+        </header>
+
+        <nav id="optionsTabs" class="tabs options-tabs" aria-label="Onglets options">
+            <button class="tab-btn active" data-tab="audio">Audio</button>
+            <button class="tab-btn" data-tab="graphics">Graphismes</button>
+            <button class="tab-btn" data-tab="gameplay">Gameplay</button>
+            <button class="tab-btn" data-tab="ui">Interface</button>
+        </nav>
+
+        <main class="tab-panels options-panels">
+            <section id="options-audio" class="tab-panel active" aria-live="polite">
+                <div class="grid">
+                    <div class="item control-item">
+                        <span>Volume global</span>
+                        <div class="control-wrap">
+                            <input id="audio-masterVolume" class="slider" type="range" min="0" max="100" step="1">
+                            <strong id="audio-masterVolume-value">100%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Volume musique</span>
+                        <div class="control-wrap">
+                            <input id="audio-musicVolume" class="slider" type="range" min="0" max="100" step="1">
+                            <strong id="audio-musicVolume-value">75%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Volume effets</span>
+                        <div class="control-wrap">
+                            <input id="audio-sfxVolume" class="slider" type="range" min="0" max="100" step="1">
+                            <strong id="audio-sfxVolume-value">85%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Mute total</span>
+                        <button id="audio-muteAll" class="toggle" type="button" aria-pressed="false">OFF</button>
+                    </div>
+                    <div class="item control-item">
+                        <span>Audio spatial</span>
+                        <button id="audio-spatialAudio" class="toggle" type="button" aria-pressed="false">ON</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="options-graphics" class="tab-panel" aria-live="polite">
+                <div class="grid">
+                    <div class="item control-item">
+                        <span>Luminosité</span>
+                        <div class="control-wrap">
+                            <input id="graphics-brightness" class="slider" type="range" min="80" max="120" step="1">
+                            <strong id="graphics-brightness-value">100%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Contraste</span>
+                        <div class="control-wrap">
+                            <input id="graphics-contrast" class="slider" type="range" min="80" max="120" step="1">
+                            <strong id="graphics-contrast-value">100%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Particules</span>
+                        <button id="graphics-particles" class="toggle" type="button" aria-pressed="true">ON</button>
+                    </div>
+                    <div class="item control-item">
+                        <span>Secousses écran</span>
+                        <button id="graphics-screenShake" class="toggle" type="button" aria-pressed="true">ON</button>
+                    </div>
+                    <div class="item control-item">
+                        <span>Limite FPS</span>
+                        <div class="control-wrap">
+                            <input id="graphics-fpsLimit" class="slider" type="range" min="30" max="120" step="10">
+                            <strong id="graphics-fpsLimit-value">60</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="options-gameplay" class="tab-panel" aria-live="polite">
+                <div class="grid">
+                    <div class="item control-item">
+                        <span>Aide visée</span>
+                        <div class="control-wrap">
+                            <input id="gameplay-aimAssist" class="slider" type="range" min="0" max="100" step="1">
+                            <strong id="gameplay-aimAssist-value">20%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Auto-feu tactile</span>
+                        <button id="gameplay-autoFireTouch" class="toggle" type="button" aria-pressed="true">ON</button>
+                    </div>
+                    <div class="item control-item">
+                        <span>Vibrations</span>
+                        <button id="gameplay-vibration" class="toggle" type="button" aria-pressed="false">OFF</button>
+                    </div>
+                    <div class="item control-item">
+                        <span>Vitesse combat</span>
+                        <div class="control-wrap">
+                            <input id="gameplay-combatSpeed" class="slider" type="range" min="80" max="120" step="1">
+                            <strong id="gameplay-combatSpeed-value">100%</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="options-ui" class="tab-panel" aria-live="polite">
+                <div class="grid">
+                    <div class="item control-item">
+                        <span>Échelle HUD</span>
+                        <div class="control-wrap">
+                            <input id="ui-hudScale" class="slider" type="range" min="80" max="130" step="1">
+                            <strong id="ui-hudScale-value">100%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Taille texte</span>
+                        <div class="control-wrap">
+                            <input id="ui-textScale" class="slider" type="range" min="85" max="130" step="1">
+                            <strong id="ui-textScale-value">100%</strong>
+                        </div>
+                    </div>
+                    <div class="item control-item">
+                        <span>Nombres de dégâts</span>
+                        <button id="ui-damageNumbers" class="toggle" type="button" aria-pressed="true">ON</button>
+                    </div>
+                    <div class="item control-item">
+                        <span>Mode daltonien</span>
+                        <button id="ui-colorBlindMode" class="toggle" type="button" aria-pressed="false">OFF</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <div data-game-footer data-footer-variant="inline"></div>
+    </div>
+</div>
+
+<div data-game-footer></div>
+
+<script src="options.js"></script>
+<script src="menu.js"></script>
+<script src="footer.js"></script>
+
+<script>
+/* Navigation */
+function goTo(page){
+    document.body.style.transition="0.8s";
+    document.body.style.opacity="0";
+    setTimeout(()=>{ window.location.href = page; },800);
+}
+
+function loadProfile(){
+    try {
+        const raw = localStorage.getItem("nv_profile");
+        if (!raw) {
+            return {
+                hardcoreUnlocked: false,
+                hardcoreMode: false
+            };
+        }
+
+        const parsed = JSON.parse(raw);
+        return {
+            ...parsed,
+            hardcoreUnlocked: Boolean(parsed.hardcoreUnlocked),
+            hardcoreMode: Boolean(parsed.hardcoreMode)
+        };
+    } catch {
+        return {
+            hardcoreUnlocked: false,
+            hardcoreMode: false
+        };
+    }
+}
+
+function loadPlayerStats(){
+    try {
+        const raw = localStorage.getItem("nv_player_stats");
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function getMenuPlayerName(){
+    const stats = loadPlayerStats();
+    const rawName = typeof stats.playerName === "string" ? stats.playerName : "";
+    const cleaned = rawName.replace(/\s+/g, " ").trim();
+    if (cleaned.length < 3 || cleaned.length > 16) return "Pilote";
+    return cleaned;
+}
+
+function renderPlayerBadge(){
+    const badge = document.getElementById("playerBadge");
+    if (!badge) return;
+    badge.textContent = "Pilote : " + getMenuPlayerName();
+}
+
+function savePlayerProfile(){
+    localStorage.setItem("nv_profile", JSON.stringify(playerProfile));
+}
+
+const playerProfile = loadProfile();
+
+function syncHardcoreButton(){
+    const hardcoreBtn = document.getElementById("hardcoreBtn");
+    if (!hardcoreBtn) return;
+    hardcoreBtn.style.display = playerProfile.hardcoreUnlocked ? "block" : "none";
+}
+
+function startNormalGame(){
+    playerProfile.hardcoreMode = false;
+    savePlayerProfile();
+    goTo("game.html");
+}
+
+function startHardcoreGame(){
+    if (!playerProfile.hardcoreUnlocked) {
+        return;
+    }
+
+    playerProfile.hardcoreMode = true;
+    savePlayerProfile();
+    goTo("game.html");
+}
+
+playerProfile.hardcoreMode = false;
+savePlayerProfile();
+syncHardcoreButton();
+renderPlayerBadge();
+
+/* Fond étoilé lent */
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener("resize",resize);
+resize();
+
+let stars=[];
+function regenerateStars(){
+    stars = [];
+
+    const referenceArea = 390 * 844;
+    const currentArea = Math.max(1, canvas.width * canvas.height);
+    const densityFactor = currentArea / referenceArea;
+
+    const cyanCount = Math.max(120, Math.min(560, Math.round(150 * densityFactor)));
+    const whiteCount = Math.max(60, Math.min(320, Math.round(80 * densityFactor)));
+
+    for(let i = 0; i < cyanCount; i++){
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2,
+            speed: Math.random() * 0.5 + 0.2,
+            color: "rgba(0,255,247,0.8)"
+        });
+    }
+
+    for(let i = 0; i < whiteCount; i++){
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 1.2,
+            speed: Math.random() * 0.3 + 0.1,
+            color: "rgba(255,255,255,0.4)"
+        });
+    }
+}
+
+regenerateStars();
+
+window.addEventListener("resize", () => {
+    regenerateStars();
+});
+
+function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // Fond spatial violet intégré
+    const gradient = ctx.createRadialGradient(
+        canvas.width/2,
+        canvas.height/2,
+        0,
+        canvas.width/2,
+        canvas.height/2,
+        canvas.height/1.2
+    );
+    gradient.addColorStop(0, "rgba(60,20,120,0.35)");
+    gradient.addColorStop(0.4, "rgba(20,10,50,0.4)");
+    gradient.addColorStop(1, "rgba(0,0,0,1)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    stars.forEach(s=>{
+        ctx.fillStyle = s.color || "rgba(0,255,247,0.8)";
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+        ctx.fill();
+        s.y+=s.speed;
+        if(s.y>canvas.height){
+            s.y=0;
+            s.x=Math.random()*canvas.width;
+        }
+    });
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>

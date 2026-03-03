@@ -1,0 +1,336 @@
+.options-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(4, 2, 10, 0.62);
+  backdrop-filter: blur(4px);
+  z-index: 40;
+}
+
+.options-overlay.active {
+  display: flex;
+}
+
+.options-shell {
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 16px;
+  background: rgba(10, 9, 19, 0.92);
+  box-shadow: 0 0 24px rgba(101, 37, 150, 0.2);
+}
+
+.options-shell {
+  width: min(980px, 96vw);
+  max-height: min(90vh, 860px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.options-header {
+  grid-template-columns: 140px 1fr 140px;
+  display: grid;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+  background: linear-gradient(to bottom, rgba(33, 20, 52, 0.35), rgba(12, 9, 20, 0));
+}
+
+.options-header h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+  color: #c9b9f7;
+}
+
+.options-shell .back-btn {
+  padding: 8px 10px;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  border-radius: 10px;
+  color: #ece9ff;
+  background: rgba(62, 23, 89, 0.35);
+  cursor: pointer;
+  min-height: 34px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.options-shell .back-btn:hover {
+  background: rgba(101, 37, 150, 0.45);
+}
+
+.options-panels {
+  overflow-y: auto;
+  padding: 12px 14px 14px;
+}
+
+.options-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+}
+
+.options-tabs .tab-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border: 1px solid rgba(168, 85, 247, 0.32);
+  border-radius: 10px;
+  background: rgba(31, 17, 46, 0.55);
+  color: #ded5ff;
+  letter-spacing: 1px;
+  cursor: pointer;
+  min-height: 42px;
+  font-family: 'Orbitron', sans-serif;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.options-tabs .tab-btn.active {
+  background: rgba(108, 48, 155, 0.35);
+  border-color: rgba(196, 144, 248, 0.72);
+  color: #f2eefe;
+  box-shadow: 0 0 14px rgba(157, 92, 229, 0.2);
+}
+
+.options-tabs .tab-btn:focus-visible,
+.options-shell .back-btn:focus-visible,
+.toggle:focus-visible,
+.slider:focus-visible {
+  outline: 2px solid rgba(196, 144, 248, 0.7);
+  outline-offset: 2px;
+}
+
+.options-panels .tab-panel {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: none;
+}
+
+.options-panels .tab-panel.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.options-panels .grid {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.control-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  border-radius: 12px;
+  background: rgba(18, 14, 30, 0.7);
+}
+
+.control-item > span {
+  color: #bdb5db;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.control-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: min(300px, 48vw);
+  justify-content: flex-end;
+}
+
+.slider {
+  width: min(240px, 42vw);
+  accent-color: #a855f7;
+}
+
+.control-wrap strong {
+  color: #f0ecff;
+  font-size: 0.92rem;
+  min-width: 54px;
+  text-align: right;
+}
+
+.toggle {
+  min-width: 72px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  background: rgba(22, 14, 34, 0.7);
+  color: #d5c9f7;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.toggle.is-on,
+.toggle[aria-pressed="true"] {
+  background: rgba(111, 48, 160, 0.4);
+  color: #f3ebff;
+  border-color: rgba(205, 162, 255, 0.68);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.24);
+}
+
+.toggle:focus-visible,
+.slider:focus-visible {
+  outline: 2px solid rgba(196, 144, 248, 0.7);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .options-overlay {
+    padding: 8px;
+  }
+
+  .options-shell {
+    --options-mobile-side-pad: 12px;
+    width: 97vw;
+    max-height: 92vh;
+    border-radius: 14px;
+  }
+
+  .options-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px var(--options-mobile-side-pad) 8px;
+  }
+
+  .options-shell .back-btn {
+    order: 1;
+    padding: 7px 9px;
+    font-size: 0.78rem;
+    min-height: 36px;
+  }
+
+  .options-header h1 {
+    order: 2;
+    width: 100%;
+    font-size: 1.02rem;
+    letter-spacing: 1px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .options-header .header-spacer {
+    display: none;
+  }
+
+  .options-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 8px var(--options-mobile-side-pad) 9px;
+  }
+
+  .options-tabs .tab-btn {
+    min-height: 40px;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    padding: 8px 6px;
+  }
+
+  .options-panels {
+    padding: 10px var(--options-mobile-side-pad) 12px;
+  }
+
+  .control-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .control-item > span {
+    font-size: 0.79rem;
+    line-height: 1.38;
+  }
+
+  .control-wrap {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .slider {
+    width: 100%;
+    max-width: none;
+  }
+
+  .control-wrap strong {
+    font-size: 0.85rem;
+    min-width: 48px;
+  }
+
+  .toggle {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .options-overlay {
+    padding: 6px;
+  }
+
+  .options-shell {
+    --options-mobile-side-pad: 10px;
+    width: 98vw;
+  }
+
+  .options-header {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  .options-header h1 {
+    font-size: 0.94rem;
+  }
+
+  .options-shell .back-btn {
+    font-size: 0.72rem;
+    min-height: 34px;
+    padding: 6px 8px;
+  }
+
+  .options-tabs {
+    gap: 6px;
+  }
+
+  .options-tabs .tab-btn {
+    min-height: 38px;
+    font-size: 0.74rem;
+  }
+
+  .control-item {
+    padding: 9px;
+  }
+
+  .control-item > span {
+    font-size: 0.74rem;
+  }
+
+  .control-wrap strong {
+    font-size: 0.79rem;
+    min-width: 44px;
+  }
+
+  .toggle {
+    height: 34px;
+    font-size: 0.76rem;
+  }
+}

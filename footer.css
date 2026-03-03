@@ -1,0 +1,60 @@
+.game-footer {
+    position: fixed;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(94vw, 980px);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 196, 196, 0.22);
+    background: rgba(3, 10, 20, 0.26);
+    backdrop-filter: blur(4px);
+    color: rgba(129, 222, 232, 0.5);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    pointer-events: none;
+    user-select: none;
+}
+
+.game-footer .version {
+    font-weight: 700;
+    color: rgba(147, 239, 247, 0.56);
+}
+
+.game-footer .rights {
+    color: rgba(129, 222, 232, 0.5);
+}
+
+.game-footer.footer-inline {
+    position: static;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    z-index: auto;
+    margin: 8px 12px 12px;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(9, 10, 18, 0.6);
+    border: 1px solid rgba(168, 85, 247, 0.22);
+}
+
+@media (max-width: 760px) {
+    .game-footer {
+        bottom: 6px;
+        gap: 6px;
+        padding: 3px 8px;
+        font-size: 0.58rem;
+        max-width: 96vw;
+    }
+
+    .game-footer.footer-inline {
+        margin: 6px 10px 10px;
+        font-size: 0.56rem;
+    }
+}
