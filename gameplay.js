@@ -959,7 +959,8 @@ function updateDifficulty(deltaTime) {
     if (intensity > maxIntensityReached) {
         maxIntensityReached = intensity;
     }
-    enemySpawnRate = Math.max(400, 2000 / intensity);
+    const spawnFloor = (isMobileDevice && !isHardcoreMode) ? 560 : 400;
+    enemySpawnRate = Math.max(spawnFloor, 2000 / intensity);
 
     const currentTier = Math.floor(intensity);
     if (currentTier > intensityTier) {
@@ -1456,7 +1457,8 @@ function createEnemy(type, x, y, options = {}) {
     const baseEnemySpeed = type === "boss"
         ? (1.5 + Math.floor(ui.level / 5) * 0.3)
         : (2 + ui.level * 0.3);
-    const intensitySpeedFactor = 1 + Math.max(0, intensity - 1) * 0.55;
+    const intensitySpeedSlope = (isMobileDevice && !isHardcoreMode) ? 0.38 : 0.55;
+    const intensitySpeedFactor = 1 + Math.max(0, intensity - 1) * intensitySpeedSlope;
     const mobileFactor = isMobileDevice ? 0.88 : 1;
     const tunedSpeed = baseEnemySpeed * intensitySpeedFactor * enemySpeedMultiplier * mobileFactor;
 
@@ -1626,7 +1628,10 @@ function updateEnemies(deltaTime){
             e.slowTimer -= deltaTime;
             if (e.slowTimer < 0) e.slowTimer = 0;
         }
-        e.speed += (tension * (isMobileDevice ? 0.0045 : 0.006));
+        const tensionSpeedBoost = isMobileDevice
+            ? (isHardcoreMode ? 0.0045 : 0.0032)
+            : 0.006;
+        e.speed += (tension * tensionSpeedBoost);
 
         let handledByFormation = false;
         const leader = e.isLeader ? e : leadersByGroup.get(e.groupId);
