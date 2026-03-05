@@ -947,6 +947,17 @@ let enemySpeedMultiplier = 1;
 let enemyFireRateMultiplier = 1;
 let lazerRechargeMultiplier = 1;
 
+function getKillsTargetForLevel(level) {
+    const levelValue = Math.max(1, Math.floor(level));
+    if (isHardcoreMode) {
+        return 5 + Math.floor(levelValue * 2);
+    }
+    if (levelValue <= 8) {
+        return 5 + Math.floor(levelValue * 2);
+    }
+    return 21 + Math.floor((levelValue - 8) * 1.2);
+}
+
 function flashIntensity() {
     canvas.style.filter = "brightness(1.1)";
     setTimeout(() => {
@@ -991,7 +1002,7 @@ const state = {
   lastEnemySpawn: 0,
   bossActive: false,
   killsThisWave: 0,
-  killsTarget: 5
+    killsTarget: getKillsTargetForLevel(1)
 };
 
 function initStars(count = 120){
@@ -1840,7 +1851,7 @@ function startNextWave(){
 
   // prochain objectif : plus tu montes, plus il faut tuer
   state.killsThisWave = 0;
-  state.killsTarget = 5 + Math.floor(ui.level * 2);
+    state.killsTarget = getKillsTargetForLevel(ui.level);
 
   triggerLevelFlash();
   triggerHyperBoost();
