@@ -907,14 +907,16 @@ function getMovementForWorld(){
         return MovementTypes.CURVE;
     }
 
-    if(world === 3){
+    if(world >= 3){
 
         const roll = Math.random();
 
-        if(roll < 0.35) return MovementTypes.VERTICAL;
-        if(roll < 0.6) return MovementTypes.HORIZONTAL;
-        if(roll < 0.85) return MovementTypes.CURVE;
-        return MovementTypes.ARC_DIVE;
+        if(roll < 0.24) return MovementTypes.VERTICAL;
+        if(roll < 0.43) return MovementTypes.HORIZONTAL;
+        if(roll < 0.62) return MovementTypes.CURVE;
+        if(roll < 0.8) return MovementTypes.ARC_DIVE;
+        if(roll < 0.91) return MovementTypes.ORBIT;
+        return MovementTypes.FEINT;
     }
 
     return MovementTypes.VERTICAL;
@@ -1584,6 +1586,7 @@ function updateEnemies(deltaTime){
 
   for(let i = state.enemies.length - 1; i >= 0; i--){
     const e = state.enemies[i];
+        const prevX = e.x;
     const timeAlive = (e.timeAlive || 0) + deltaTime;
     e.timeAlive = timeAlive;
 
@@ -1669,20 +1672,33 @@ function updateEnemies(deltaTime){
         }
 
         if(!handledByFormation){
+            let targetX = e.x;
+            let steering = 4.5;
+
             switch(e.movementType){
 
             case MovementTypes.VERTICAL:
                 e.y += e.speed * deltaTime * 100;
+                targetX = e.baseX + Math.sin(timeAlive * 0.9 + (e.phase || 0)) * 10;
+                steering = 3.2;
                 break;
 
             case MovementTypes.HORIZONTAL:
+                if(e.strafeAmplitude === undefined){
+                    e.strafeAmplitude = 58 + Math.random() * 34;
+                    e.strafeFreq = 2.2 + Math.random() * 1.2;
+                }
                 e.y += e.speed * 0.7 * deltaTime * 100;
-                e.x += Math.sin(timeAlive * 3) * 80 * deltaTime;
+                targetX = e.baseX + Math.sin(timeAlive * e.strafeFreq) * e.strafeAmplitude;
+                steering = 5.2;
                 break;
 
             case MovementTypes.CURVE:
                 e.y += e.speed * 0.8 * deltaTime * 100;
-                e.x = e.baseX + Math.sin(timeAlive * 2) * 60;
+                targetX = e.baseX
+                    + Math.sin(timeAlive * 1.9 + (e.phase || 0)) * 58
+                    + Math.sin(timeAlive * 0.9) * 14;
+                steering = 4.3;
                 break;
 
             case MovementTypes.ARC_DIVE:
@@ -1701,7 +1717,8 @@ function updateEnemies(deltaTime){
 
                         const progress = enemy.timeAlive / enemy.arcDuration;
 
-                        enemy.x = enemy.baseX + Math.sin(progress * Math.PI) * enemy.arcAmplitude;
+                        targetX = enemy.baseX + Math.sin(progress * Math.PI) * enemy.arcAmplitude;
+                        steering = 6.4;
 
                         if(enemy.timeAlive >= enemy.arcDuration){
                             enemy.phase = "dive";
@@ -1712,16 +1729,57 @@ function updateEnemies(deltaTime){
 
                         enemy.diveSpeed += 0.02;
                         enemy.y += enemy.diveSpeed * deltaTime * 100;
+                        targetX = enemy.x + Math.sin(timeAlive * 1.6) * 6;
+                        steering = 2.2;
                     }
                 }
 
                 break;
 
+            case MovementTypes.ORBIT:
+                if(e.orbitRadius === undefined){
+                    e.orbitRadius = 42 + Math.random() * 32;
+                    e.orbitSpeed = 1.8 + Math.random() * 1.2;
+                }
+                e.y += e.speed * 0.62 * deltaTime * 100;
+                targetX = e.baseX + Math.sin(timeAlive * e.orbitSpeed + (e.phase || 0)) * e.orbitRadius;
+                steering = 3.8;
+                break;
+
+            case MovementTypes.FEINT:
+                if(e.feintDir === undefined){
+                    e.feintDir = Math.random() < 0.5 ? -1 : 1;
+                    e.feintAmplitude = 28 + Math.random() * 26;
+                }
+                e.y += e.speed * 0.82 * deltaTime * 100;
+                targetX = e.baseX
+                    + Math.sin(timeAlive * 5.2) * e.feintAmplitude
+                    + Math.sin(timeAlive * 1.6) * e.feintAmplitude * 0.35 * e.feintDir;
+                steering = 7.2;
+                break;
+
             default:
                 e.y += e.speed * deltaTime * 100;
+                targetX = e.baseX;
+                steering = 3.5;
                 break;
         }
+
+            if (Number.isFinite(targetX)) {
+                const blend = Math.min(1, steering * deltaTime);
+                e.x += (targetX - e.x) * blend;
+            }
         }
+
+    const sideMargin = Math.max(24, (e.size || 45) * 0.45);
+    e.x = clamp(e.x, sideMargin, canvas.width - sideMargin);
+
+    const lateralVelocity = (e.x - prevX) / Math.max(0.001, deltaTime);
+    const normalizedLateral = clamp(lateralVelocity / 260, -1, 1);
+    const maxBank = isMobileDevice ? 0.2 : 0.24;
+    const targetBankAngle = normalizedLateral * maxBank;
+    const previousBank = e.bankAngle || 0;
+    e.bankAngle = previousBank + (targetBankAngle - previousBank) * Math.min(1, deltaTime * 10);
 
     // s'ils sortent, on les retire (mais ça ne doit PAS valider la vague)
     if(e.y > canvas.height + 60){
@@ -2847,15 +2905,22 @@ function drawEnemies(){
 
         // --- Sprite brut (sans shadow) + align pixel ---
         const img = (e.type === "boss") ? bossImg : enemyImg;
-        const drawX = Math.round(cx - size / 2);
-        const drawY = Math.round(cy - size / 2);
         const drawS = Math.round(size);
         if (e.type !== "boss") {
+            const bankAngle = e.bankAngle || 0;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(bankAngle);
             ctx.shadowColor = "#ff2a6d";
             ctx.shadowBlur = 15;
+            ctx.drawImage(img, -drawS / 2, -drawS / 2, drawS, drawS);
+            ctx.restore();
+            ctx.shadowBlur = 0;
+        } else {
+            const drawX = Math.round(cx - size / 2);
+            const drawY = Math.round(cy - size / 2);
+            ctx.drawImage(img, drawX, drawY, drawS, drawS);
         }
-        ctx.drawImage(img, drawX, drawY, drawS, drawS);
-        ctx.shadowBlur = 0;
 
         // --- Flash impact (hit) : propre, rond, jamais carré ---
         if (e.hitTimer > 0) {
