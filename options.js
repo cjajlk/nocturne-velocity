@@ -9,7 +9,7 @@
   const DEFAULTS = {
     audio: {
       masterVolume: 100,
-      musicVolume: 75,
+      musicVolume: 30,
       sfxVolume: 85,
       muteAll: false,
       spatialAudio: true

@@ -287,38 +287,64 @@ function loadOptionsGroup(storageKey, defaults) {
 
 const gameplayAudioOptions = loadOptionsGroup("nv_options_audio", {
     masterVolume: 100,
+    musicVolume: 30,
     sfxVolume: 85,
     muteAll: false
 });
 
 const gameplayControlOptions = loadOptionsGroup("nv_options_gameplay", {
+    aimAssist: 20,
     autoFireTouch: true,
-    combatSpeed: 100
+    combatSpeed: 100,
+    vibration: false
 });
 
 const gameplayGraphicsOptions = loadOptionsGroup("nv_options_graphics", {
     brightness: 100,
     contrast: 100,
-    screenShake: true
+    screenShake: true,
+    fpsLimit: 60
 });
 
 const gameplayUIOptions = loadOptionsGroup("nv_options_ui", {
-    hudScale: 100
+    hudScale: 100,
+    textScale: 100,
+    damageNumbers: true
 });
 
 const baseMasterVolume = Math.max(0, Math.min(100, Number(gameplayAudioOptions.masterVolume) || 100));
+const baseMusicVolume = Math.max(0, Math.min(100, Number(gameplayAudioOptions.musicVolume) || 30));
 const baseSfxVolume = Math.max(0, Math.min(100, Number(gameplayAudioOptions.sfxVolume) || 85));
 const isMuted = Boolean(gameplayAudioOptions.muteAll);
+const musicVolumeMultiplier = isMuted ? 0 : (baseMasterVolume / 100) * (baseMusicVolume / 100);
 const sfxVolumeMultiplier = isMuted ? 0 : (baseMasterVolume / 100) * (baseSfxVolume / 100);
 
 const combatSpeedSetting = Math.max(80, Math.min(120, Number(gameplayControlOptions.combatSpeed) || 100));
 const combatSpeedMultiplier = combatSpeedSetting / 100;
+const aimAssistStrength = Math.max(0, Math.min(100, Number(gameplayControlOptions.aimAssist) || 0));
 const autoFireTouchEnabled = Boolean(gameplayControlOptions.autoFireTouch);
+const vibrationEnabled = Boolean(gameplayControlOptions.vibration);
 const graphicsBrightness = Math.max(80, Math.min(120, Number(gameplayGraphicsOptions.brightness) || 100));
 const graphicsContrast = Math.max(80, Math.min(120, Number(gameplayGraphicsOptions.contrast) || 100));
 const screenShakeEnabled = Boolean(gameplayGraphicsOptions.screenShake);
+const fpsLimitSetting = Math.max(30, Math.min(120, Number(gameplayGraphicsOptions.fpsLimit) || 60));
+const frameIntervalMs = 1000 / fpsLimitSetting;
 const hudScaleValue = Math.max(80, Math.min(130, Number(gameplayUIOptions.hudScale) || 100)) / 100;
+const textScaleValue = Math.max(85, Math.min(130, Number(gameplayUIOptions.textScale) || 100)) / 100;
+const damageNumbersEnabled = Boolean(gameplayUIOptions.damageNumbers);
 let flashFilterBoostActive = false;
+
+function getHUDFont(sizePx) {
+    return `bold ${Math.round(sizePx * textScaleValue)}px Arial`;
+}
+
+function applyMusicVolumeHooks() {
+    const musicElements = document.querySelectorAll("audio[data-role='music']");
+    musicElements.forEach((audioEl) => {
+        if (!(audioEl instanceof HTMLAudioElement)) return;
+        audioEl.volume = Math.max(0, Math.min(1, musicVolumeMultiplier));
+    });
+}
 
 function isGarageComplete(profileState) {
     if (!profileState) return false;
@@ -411,7 +437,7 @@ function saveScore(score) {
 function drawHUD() {
     // HUD Vie
     ctx.save();
-    ctx.font = "bold 22px Arial";
+    ctx.font = getHUDFont(22);
     ctx.fillStyle = "#00ffff";
     ctx.strokeStyle = "#003344";
     ctx.lineWidth = 2;
@@ -423,12 +449,12 @@ function drawHUD() {
     ctx.fillText("Vies : " + ui.lives, 24, hudY);
 
     // HUD Objectif kills
-    ctx.font = "bold 20px Arial";
+    ctx.font = getHUDFont(20);
     ctx.strokeText("A détruire : " + state.killsThisWave + " / " + state.killsTarget, 24, hudY + 30);
     ctx.fillText("A détruire : " + state.killsThisWave + " / " + state.killsTarget, 24, hudY + 30);
 
     if (comboCount > 1) {
-        ctx.font = "bold 18px Arial";
+        ctx.font = getHUDFont(18);
         ctx.fillStyle = comboPopupTimer > 0 ? "#fff7a0" : "#7df5ff";
         ctx.strokeStyle = "rgba(0, 20, 35, 0.85)";
         ctx.strokeText(`COMBO x${comboCount}  •  SCORE x${getComboMultiplier().toFixed(2)}`, 24, hudY + 58);
@@ -436,7 +462,7 @@ function drawHUD() {
     }
 
     if (activeBuff.timeLeft > 0) {
-        ctx.font = "bold 17px Arial";
+        ctx.font = getHUDFont(17);
         ctx.fillStyle = "#b3ff8a";
         const buffText = activeBuff.type === "overdrive" ? "OVERDRIVE" : activeBuff.type;
         ctx.strokeText(`${buffText} ${activeBuff.timeLeft.toFixed(1)}s`, 24, hudY + 84);
@@ -444,14 +470,14 @@ function drawHUD() {
     }
 
     if (shieldTimeLeft > 0) {
-        ctx.font = "bold 17px Arial";
+        ctx.font = getHUDFont(17);
         ctx.fillStyle = "#9fe8ff";
         ctx.strokeText(`BOUCLIER ${shieldTimeLeft.toFixed(1)}s`, 24, hudY + 102);
         ctx.fillText(`BOUCLIER ${shieldTimeLeft.toFixed(1)}s`, 24, hudY + 102);
     }
 
     if (pickupMessageTimer > 0 && pickupMessage) {
-        ctx.font = "bold 17px Arial";
+        ctx.font = getHUDFont(17);
         ctx.fillStyle = "#d8c8ff";
         const pickupY = shieldTimeLeft > 0 ? hudY + 126 : hudY + 108;
         ctx.strokeText(pickupMessage, 24, pickupY);
@@ -461,7 +487,7 @@ function drawHUD() {
     if (activeModuleId === "lazer") {
         const lazerPercent = Math.round((lazerCharge / LAZER_CHARGE_MAX) * 100);
         const lazerY = shieldTimeLeft > 0 ? hudY + 150 : hudY + 132;
-        ctx.font = "bold 16px Arial";
+        ctx.font = getHUDFont(16);
         ctx.fillStyle = lazerBeamActive ? "#7df5ff" : "#9cb8ff";
         ctx.strokeStyle = "rgba(0, 20, 35, 0.85)";
         ctx.strokeText(`LAZER ${lazerPercent}%`, 24, lazerY);
@@ -1051,6 +1077,7 @@ const state = {
   enemies: [],
   drones: [],
     collectibles: [],
+    damageTexts: [],
   stars: [],
   enemyBullets: [],
   lastFire: 0,
@@ -1458,13 +1485,14 @@ function shoot(timestamp){
         }, 150);
     }
     const bulletSpeed = activeModuleId === "flux" || activeModuleId === "lazer" ? 15 : 10;
+    const assistVX = getAimAssistVelocity(bulletSpeed);
     state.bullets.push({
         x: player.x,
         y: player.y,
         width: (activeModuleId === "impact" || activeModuleId === "nova") ? 12 : 4,
         height: 22,
         speed: bulletSpeed,
-        vx: 0,
+        vx: assistVX,
         vy: -bulletSpeed,
         damage: moduleData ? moduleData.damage : 1,
         type: activeModuleId || "normal"
@@ -1486,6 +1514,78 @@ function updateImpacts() {
     });
 
     impacts = impacts.filter(i => i.alpha > 0);
+}
+
+function getAimAssistVelocity(bulletSpeed) {
+    if (aimAssistStrength <= 0) return 0;
+    if (!state.enemies || state.enemies.length === 0) return 0;
+
+    let target = null;
+    let bestDistance = Infinity;
+
+    for (const enemy of state.enemies) {
+        if (!enemy || enemy.y >= player.y) continue;
+        const dx = enemy.x - player.x;
+        const dy = enemy.y - player.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < bestDistance) {
+            bestDistance = dist;
+            target = enemy;
+        }
+    }
+
+    if (!target) return 0;
+
+    const dx = target.x - player.x;
+    const dy = Math.max(40, Math.abs(target.y - player.y));
+    const strength = aimAssistStrength / 100;
+    const raw = (dx / dy) * bulletSpeed * 0.8 * strength;
+    const maxVX = bulletSpeed * (0.42 * strength);
+    return clamp(raw, -maxVX, maxVX);
+}
+
+function spawnDamageText(x, y, amount) {
+    if (!damageNumbersEnabled) return;
+    state.damageTexts.push({
+        x,
+        y,
+        value: String(Math.max(1, Math.round(amount))),
+        vy: -34,
+        life: 0.48,
+        maxLife: 0.48
+    });
+}
+
+function updateDamageTexts(deltaTime) {
+    if (!state.damageTexts || state.damageTexts.length === 0) return;
+    for (let i = state.damageTexts.length - 1; i >= 0; i--) {
+        const text = state.damageTexts[i];
+        text.life -= deltaTime;
+        text.y += text.vy * deltaTime;
+        if (text.life <= 0) {
+            state.damageTexts.splice(i, 1);
+        }
+    }
+}
+
+function drawDamageTexts() {
+    if (!damageNumbersEnabled || !state.damageTexts || state.damageTexts.length === 0) return;
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = getHUDFont(15);
+
+    for (const text of state.damageTexts) {
+        const alpha = Math.max(0, text.life / text.maxLife);
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = "rgba(20, 5, 30, 0.95)";
+        ctx.lineWidth = 3;
+        ctx.fillStyle = "#ffd6f2";
+        ctx.strokeText(text.value, text.x, text.y);
+        ctx.fillText(text.value, text.x, text.y);
+    }
+
+    ctx.restore();
 }
 
 function rewardCredits(amount) {
@@ -1964,6 +2064,13 @@ function checkCollisions(){
 }
 function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
 
+function triggerVibration(pattern) {
+    if (!vibrationEnabled) return;
+    if (!isMobileDevice) return;
+    if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+    navigator.vibrate(pattern);
+}
+
 function circleRectCollide(cx, cy, r, rx, ry, rw, rh){
     const closestX = clamp(cx, rx, rx + rw);
     const closestY = clamp(cy, ry, ry + rh);
@@ -1991,9 +2098,11 @@ function handleCollisions(){
             if(damageCooldown === 0){
                 if (shieldTimeLeft > 0) {
                     shieldTimeLeft = Math.max(0, shieldTimeLeft - 2.5);
+                    triggerVibration(12);
                 } else {
                     ui.lives--;
                     runMetrics.damageTaken += 1;
+                    triggerVibration([24, 20, 18]);
                 }
                 damageCooldown = 50; // invincibilité prolongée
                 if(ui.lives <= 0) ui.gameOver = true;
@@ -2076,6 +2185,7 @@ function handleCollisions(){
             const baseDamage = bullet.damage ?? 1;
             const damage = bullet.type === "drone" ? baseDamage : baseDamage + dronePower;
             enemy.hp -= damage;
+            spawnDamageText(enemy.x, enemy.y - (enemy.size || 45) * 0.28, damage);
             if (bullet.type !== "drone") {
                 runMetrics.shotsHit += 1;
             }
@@ -2134,9 +2244,11 @@ for(let ei = state.enemies.length - 1; ei >= 0; ei--){
     if(damageCooldown === 0){
             if (shieldTimeLeft > 0) {
                 shieldTimeLeft = Math.max(0, shieldTimeLeft - 3);
+                triggerVibration(14);
             } else {
                 ui.lives -= 1;
                 runMetrics.damageTaken += 1;
+                triggerVibration([28, 24, 22]);
             }
       damageCooldown = 50;
       if(ui.lives <= 0) ui.gameOver = true;
@@ -3045,10 +3157,17 @@ function gameLoop(timestamp){
     if (lastFrameTime === null) {
         lastFrameTime = timestamp;
     }
-    const rawDeltaTime = (timestamp - lastFrameTime) / 1000;
+
+    const elapsedMs = timestamp - lastFrameTime;
+    if (elapsedMs < frameIntervalMs) {
+        return requestAnimationFrame(gameLoop);
+    }
+
+    const steppedTimestamp = timestamp - (elapsedMs % frameIntervalMs);
+    const rawDeltaTime = (steppedTimestamp - lastFrameTime) / 1000;
     const deltaTime = Math.min(rawDeltaTime, 0.05);
     const gameplayDeltaTime = deltaTime * combatSpeedMultiplier;
-    lastFrameTime = timestamp;
+    lastFrameTime = steppedTimestamp;
     runMetrics.playTime += deltaTime;
     updateRunWorldReached(world);
 
@@ -3150,6 +3269,7 @@ function gameLoop(timestamp){
     updateCombo(gameplayDeltaTime);
     updateBuff(gameplayDeltaTime);
     updateImpacts();
+    updateDamageTexts(gameplayDeltaTime);
     updateHUD();
     updateEnergyBar();
 
@@ -3165,6 +3285,7 @@ function gameLoop(timestamp){
     drawBullets();
     drawCollectibles();
     drawImpacts();
+    drawDamageTexts();
     drawEnemies();
     drawEnemyBullets();   // ← ICI le manquant
 
@@ -3204,6 +3325,7 @@ function checkOrientation(){
 window.addEventListener("resize", checkOrientation);
 window.addEventListener("orientationchange", checkOrientation);
 window.addEventListener("load", () => {
+    applyMusicVolumeHooks();
     applyHUDScale();
     applyCanvasVisualFilter();
     checkOrientation();
