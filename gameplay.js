@@ -268,6 +268,58 @@ let isNewRecord = false;
 let gameOverAnimStart = null;
 const isMobileDevice = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
+function safeParseJSON(raw) {
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+function loadOptionsGroup(storageKey, defaults) {
+    const raw = localStorage.getItem(storageKey);
+    const parsed = raw ? safeParseJSON(raw) : null;
+    if (!parsed || typeof parsed !== "object") {
+        return { ...defaults };
+    }
+    return { ...defaults, ...parsed };
+}
+
+const gameplayAudioOptions = loadOptionsGroup("nv_options_audio", {
+    masterVolume: 100,
+    sfxVolume: 85,
+    muteAll: false
+});
+
+const gameplayControlOptions = loadOptionsGroup("nv_options_gameplay", {
+    autoFireTouch: true,
+    combatSpeed: 100
+});
+
+const gameplayGraphicsOptions = loadOptionsGroup("nv_options_graphics", {
+    brightness: 100,
+    contrast: 100,
+    screenShake: true
+});
+
+const gameplayUIOptions = loadOptionsGroup("nv_options_ui", {
+    hudScale: 100
+});
+
+const baseMasterVolume = Math.max(0, Math.min(100, Number(gameplayAudioOptions.masterVolume) || 100));
+const baseSfxVolume = Math.max(0, Math.min(100, Number(gameplayAudioOptions.sfxVolume) || 85));
+const isMuted = Boolean(gameplayAudioOptions.muteAll);
+const sfxVolumeMultiplier = isMuted ? 0 : (baseMasterVolume / 100) * (baseSfxVolume / 100);
+
+const combatSpeedSetting = Math.max(80, Math.min(120, Number(gameplayControlOptions.combatSpeed) || 100));
+const combatSpeedMultiplier = combatSpeedSetting / 100;
+const autoFireTouchEnabled = Boolean(gameplayControlOptions.autoFireTouch);
+const graphicsBrightness = Math.max(80, Math.min(120, Number(gameplayGraphicsOptions.brightness) || 100));
+const graphicsContrast = Math.max(80, Math.min(120, Number(gameplayGraphicsOptions.contrast) || 100));
+const screenShakeEnabled = Boolean(gameplayGraphicsOptions.screenShake);
+const hudScaleValue = Math.max(80, Math.min(130, Number(gameplayUIOptions.hudScale) || 100)) / 100;
+let flashFilterBoostActive = false;
+
 function isGarageComplete(profileState) {
     if (!profileState) return false;
 
@@ -661,11 +713,12 @@ enemyImg.src = "assets/vaisseau/ennemi/ennemi1.png";
 const bossImg = new Image();
 bossImg.src = "assets/vaisseau/boss/spectra.png";
 const enemyExplosionSound = new Audio("assets/sounds/explosion1.wav");
-enemyExplosionSound.volume = 0.4;
+enemyExplosionSound.volume = 0.4 * sfxVolumeMultiplier;
 
 function playExplosion(){
+    if (sfxVolumeMultiplier <= 0) return;
     const s = enemyExplosionSound.cloneNode();
-    s.volume = 0.4;
+    s.volume = 0.4 * sfxVolumeMultiplier;
     s.play();
 }
 let wave = 1;
@@ -959,9 +1012,11 @@ function getKillsTargetForLevel(level) {
 }
 
 function flashIntensity() {
-    canvas.style.filter = "brightness(1.1)";
+    flashFilterBoostActive = true;
+    applyCanvasVisualFilter();
     setTimeout(() => {
-        canvas.style.filter = "brightness(1)";
+        flashFilterBoostActive = false;
+        applyCanvasVisualFilter();
     }, 200);
 }
 
@@ -1118,8 +1173,8 @@ initDrones(dronePower);
 // INPUT
 // ============================
 let fireMode = isMobileDevice
-  ? "autoTouch"
-  : "holdAnywhere";
+    ? (autoFireTouchEnabled ? "autoTouch" : "manualButton")
+    : "holdAnywhere";
 let activeTouchId = null;
 
 function getMobileTouchOffsetY() {
@@ -2365,8 +2420,44 @@ function setGameplayHUDVisibility(visible) {
     if (hud) hud.style.display = display;
     if (moduleHUD) moduleHUD.style.display = display;
     if (intensityHUD) intensityHUD.style.display = display;
-    if (shootButton) shootButton.style.display = display;
     if (energyBar) energyBar.style.display = display;
+
+    if (shootButton) {
+        if (!visible) {
+            shootButton.style.display = "none";
+        } else {
+            shootButton.style.display = (isMobileDevice && fireMode === "manualButton") ? "block" : "none";
+        }
+    }
+}
+
+function applyHUDScale() {
+    const hud = document.getElementById("hud");
+    const moduleHUD = document.getElementById("moduleHUD");
+    const intensityHUD = document.getElementById("intensityHUD");
+    const energyBar = document.querySelector(".energy-bar");
+
+    if (hud) {
+        hud.style.scale = String(hudScaleValue);
+        hud.style.transformOrigin = "top left";
+    }
+    if (moduleHUD) {
+        moduleHUD.style.scale = String(hudScaleValue);
+    }
+    if (intensityHUD) {
+        intensityHUD.style.scale = String(hudScaleValue);
+        intensityHUD.style.transformOrigin = "top right";
+    }
+    if (energyBar) {
+        energyBar.style.scale = String(hudScaleValue);
+    }
+}
+
+function applyCanvasVisualFilter() {
+    const boostedBrightness = flashFilterBoostActive
+        ? Math.min(140, graphicsBrightness * 1.1)
+        : graphicsBrightness;
+    canvas.style.filter = `brightness(${boostedBrightness}%) contrast(${graphicsContrast}%)`;
 }
 
 window.addEventListener("keydown", (e)=>{
@@ -2956,6 +3047,7 @@ function gameLoop(timestamp){
     }
     const rawDeltaTime = (timestamp - lastFrameTime) / 1000;
     const deltaTime = Math.min(rawDeltaTime, 0.05);
+    const gameplayDeltaTime = deltaTime * combatSpeedMultiplier;
     lastFrameTime = timestamp;
     runMetrics.playTime += deltaTime;
     updateRunWorldReached(world);
@@ -2966,6 +3058,17 @@ function gameLoop(timestamp){
 
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+
+    if (screenShakeEnabled && !ui.gameOver && damageCooldown > 0) {
+        const shakeStrength = Math.min(7, damageCooldown * 0.16);
+        if (shakeStrength > 0.2) {
+            const shakeX = (Math.random() - 0.5) * shakeStrength;
+            const shakeY = (Math.random() - 0.5) * shakeStrength;
+            ctx.translate(shakeX, shakeY);
+        }
+    }
+
     drawNebula();
 
     // --- FOND SPATIAL ---
@@ -2997,6 +3100,7 @@ function gameLoop(timestamp){
     if(ui.gameOver){
         setGameplayHUDVisibility(false);
         drawGameOver();
+        ctx.restore();
         return requestAnimationFrame(gameLoop);
     }
 
@@ -3005,8 +3109,8 @@ function gameLoop(timestamp){
     // Updates
     updatePlayer();
     updateDrones(timestamp);
-    updateDifficulty(deltaTime);
-    updateEnergy(deltaTime);
+    updateDifficulty(gameplayDeltaTime);
+    updateEnergy(gameplayDeltaTime);
     if(isFiring){
         shoot(timestamp);
     }
@@ -3016,7 +3120,7 @@ function gameLoop(timestamp){
     }
 
     if (lazerBeamActive) {
-        const chargeDrain = LAZER_CHARGE_DRAIN_PER_SEC * deltaTime;
+        const chargeDrain = LAZER_CHARGE_DRAIN_PER_SEC * gameplayDeltaTime;
         if (lazerCharge <= chargeDrain) {
             lazerCharge = 0;
             lazerBeamActive = false;
@@ -3024,7 +3128,7 @@ function gameLoop(timestamp){
             lazerCharge -= chargeDrain;
         }
 
-        const drain = LAZER_BEAM_ENERGY_PER_SEC * deltaTime;
+        const drain = LAZER_BEAM_ENERGY_PER_SEC * gameplayDeltaTime;
         if (energy <= drain) {
             energy = 0;
             lazerBeamActive = false;
@@ -3032,19 +3136,19 @@ function gameLoop(timestamp){
             energy -= drain;
         }
     } else if (activeModuleId === "lazer") {
-        lazerCharge = Math.min(LAZER_CHARGE_MAX, lazerCharge + (LAZER_CHARGE_REGEN_PER_SEC / lazerRechargeMultiplier) * deltaTime);
+        lazerCharge = Math.min(LAZER_CHARGE_MAX, lazerCharge + (LAZER_CHARGE_REGEN_PER_SEC / lazerRechargeMultiplier) * gameplayDeltaTime);
     }
 
     updateBullets();
     updateEnemyBullets();
     spawnEnemy(timestamp); 
-    updateEnemies(deltaTime);
+    updateEnemies(gameplayDeltaTime);
     updateTension();
     handleCollisions();
-    updateCollectibles(deltaTime);
+    updateCollectibles(gameplayDeltaTime);
     collectPickups();
-    updateCombo(deltaTime);
-    updateBuff(deltaTime);
+    updateCombo(gameplayDeltaTime);
+    updateBuff(gameplayDeltaTime);
     updateImpacts();
     updateHUD();
     updateEnergyBar();
@@ -3078,6 +3182,8 @@ function gameLoop(timestamp){
         ctx.restore();
     }
 
+    ctx.restore();
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -3098,6 +3204,8 @@ function checkOrientation(){
 window.addEventListener("resize", checkOrientation);
 window.addEventListener("orientationchange", checkOrientation);
 window.addEventListener("load", () => {
+    applyHUDScale();
+    applyCanvasVisualFilter();
     checkOrientation();
     updateCreditsHUD();
     updateModuleHUD();
@@ -3118,12 +3226,13 @@ shipImg.onload = () => {
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playIntensityPulse(){
+    if (sfxVolumeMultiplier <= 0) return;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "sine";
     osc.frequency.setValueAtTime(260, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(340, audioCtx.currentTime + 0.12);
-    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.04 * sfxVolumeMultiplier, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -3132,12 +3241,13 @@ function playIntensityPulse(){
 }
 
 function playShootSound(){
+    if (sfxVolumeMultiplier <= 0) return;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "sawtooth"; // son spatial moderne
     osc.frequency.setValueAtTime(600, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.2 * sfxVolumeMultiplier, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -3146,6 +3256,7 @@ function playShootSound(){
 }
 
 function playLifePickupSound() {
+    if (sfxVolumeMultiplier <= 0) return;
     const osc1 = audioCtx.createOscillator();
     const osc2 = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -3160,7 +3271,7 @@ function playLifePickupSound() {
     osc2.frequency.exponentialRampToValueAtTime(1480, audioCtx.currentTime + 0.14);
 
     gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.16, audioCtx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.16 * sfxVolumeMultiplier, audioCtx.currentTime + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
 
     osc1.connect(gain);
@@ -3174,6 +3285,7 @@ function playLifePickupSound() {
 }
 
 function playShieldPickupSound() {
+    if (sfxVolumeMultiplier <= 0) return;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     const filter = audioCtx.createBiquadFilter();
@@ -3187,7 +3299,7 @@ function playShieldPickupSound() {
     filter.Q.value = 2;
 
     gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.14, audioCtx.currentTime + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.14 * sfxVolumeMultiplier, audioCtx.currentTime + 0.025);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
 
     osc.connect(filter);
