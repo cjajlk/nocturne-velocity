@@ -640,7 +640,9 @@ function triggerHyperBoost(){
 // ...existing code...
 function getShipSize(){
     const base = Math.min(canvas.width, canvas.height);
-    const mobileScale = isMobileDevice ? 1.2 : 1;
+    const mobileScale = isMobileDevice
+        ? (canvas.width < 600 ? 1.55 : 1.35)
+        : 1;
     return {
         width: base * 0.09 * mobileScale,
         height: base * 0.13 * mobileScale
@@ -1450,6 +1452,7 @@ function handleBossProgression() {
 
 // ============================
 function createEnemy(type, x, y, options = {}) {
+    const enemyBaseSize = canvas.width < 600 ? 58 : 45;
     const baseEnemySpeed = type === "boss"
         ? (1.5 + Math.floor(ui.level / 5) * 0.3)
         : (2 + ui.level * 0.3);
@@ -1460,13 +1463,13 @@ function createEnemy(type, x, y, options = {}) {
     let color;
     switch(type) {
         case "normal":
-            color = "rgba(255,80,80,0.6)";
+            color = "#ff3b3b";
             break;
         case "zigzag":
-            color = "rgba(255,180,0,0.6)";
+            color = "#ff6a00";
             break;
         case "shooter":
-            color = "rgba(255,0,120,0.6)";
+            color = "#ff2a6d";
             break;
         case "boss":
             color = "rgba(140,0,255,0.7)";
@@ -1475,7 +1478,7 @@ function createEnemy(type, x, y, options = {}) {
     const enemy = {
         x,
         y,
-        size: type === "boss" ? 140 : 45,
+        size: type === "boss" ? 140 : enemyBaseSize,
         type,
         color,
         // Boss : difficulté évolutive tous les 5 niveaux
@@ -2404,38 +2407,98 @@ function drawEnemyBullets(){
     for(const b of state.enemyBullets){
         if (b.type === "spectra") {
             ctx.save();
-            ctx.shadowColor = "rgba(140,0,255,0.9)";
-            ctx.shadowBlur = 18;
-            // cœur
+            const vx = b.vx || 0;
+            const vy = b.vy || 6;
+            const angle = Math.atan2(vy, vx) + Math.PI / 2;
+            const radius = b.r || 7;
+            const length = radius * 2.8;
+            const width = radius * 1.15;
+            const trail = radius * 3.4;
+
+            ctx.translate(b.x, b.y);
+            ctx.rotate(angle);
+
+            ctx.shadowColor = "rgba(170,80,255,0.95)";
+            ctx.shadowBlur = 22;
+
+            const trailGradient = ctx.createLinearGradient(0, trail * 0.55, 0, -trail);
+            trailGradient.addColorStop(0, "rgba(210,150,255,0.5)");
+            trailGradient.addColorStop(1, "rgba(210,150,255,0)");
+            ctx.fillStyle = trailGradient;
             ctx.beginPath();
-            ctx.arc(b.x, b.y, b.r || 7, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(170,80,255,0.9)";
+            ctx.moveTo(-width * 0.42, radius * 0.3);
+            ctx.lineTo(width * 0.42, radius * 0.3);
+            ctx.lineTo(width * 0.16, -trail);
+            ctx.lineTo(-width * 0.16, -trail);
+            ctx.closePath();
             ctx.fill();
-            // halo respirant
-            const pulse = 1 + Math.sin(performance.now() * 0.01) * 0.25;
+
+            ctx.fillStyle = "rgba(210,120,255,0.96)";
             ctx.beginPath();
-            ctx.arc(b.x, b.y, (b.r || 7) * 2.0 * pulse, 0, Math.PI * 2);
-            ctx.strokeStyle = "rgba(170,80,255,0.35)";
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            ctx.moveTo(0, -length);
+            ctx.lineTo(width, radius * 0.35);
+            ctx.lineTo(0, length * 0.35);
+            ctx.lineTo(-width, radius * 0.35);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = "rgba(255,240,255,0.92)";
+            ctx.beginPath();
+            ctx.moveTo(0, -length * 0.7);
+            ctx.lineTo(width * 0.35, 0);
+            ctx.lineTo(0, length * 0.12);
+            ctx.lineTo(-width * 0.35, 0);
+            ctx.closePath();
+            ctx.fill();
+
             ctx.restore();
             continue;
         }
         ctx.save();
         const radius = b.r || 6;
         const bulletColor = b.color || "#ff4a8b";
+        const vx = b.vx || 0;
+        const vy = b.vy || 6;
+        const angle = Math.atan2(vy, vx) + Math.PI / 2;
+        const length = radius * 2.4;
+        const width = radius * 1.05;
+        const trailLength = radius * 2.7;
+
+        ctx.translate(b.x, b.y);
+        ctx.rotate(angle);
         ctx.shadowColor = bulletColor;
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = bulletColor;
+        ctx.shadowBlur = 14;
+
+        const trailGradient = ctx.createLinearGradient(0, trailLength * 0.5, 0, -trailLength);
+        trailGradient.addColorStop(0, "rgba(255, 185, 215, 0.5)");
+        trailGradient.addColorStop(1, "rgba(255, 185, 215, 0)");
+        ctx.fillStyle = trailGradient;
         ctx.beginPath();
-        ctx.arc(b.x, b.y, radius, 0, Math.PI * 2);
+        ctx.moveTo(-width * 0.35, radius * 0.3);
+        ctx.lineTo(width * 0.35, radius * 0.3);
+        ctx.lineTo(width * 0.13, -trailLength);
+        ctx.lineTo(-width * 0.13, -trailLength);
+        ctx.closePath();
         ctx.fill();
 
-        ctx.strokeStyle = "rgba(255, 190, 220, 0.8)";
-        ctx.lineWidth = 1.4;
+        ctx.fillStyle = bulletColor;
         ctx.beginPath();
-        ctx.arc(b.x, b.y, radius + 2.4, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.moveTo(0, -length);
+        ctx.lineTo(width, radius * 0.4);
+        ctx.lineTo(0, length * 0.35);
+        ctx.lineTo(-width, radius * 0.4);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(255,240,246,0.9)";
+        ctx.beginPath();
+        ctx.moveTo(0, -length * 0.72);
+        ctx.lineTo(width * 0.32, 0);
+        ctx.lineTo(0, length * 0.12);
+        ctx.lineTo(-width * 0.32, 0);
+        ctx.closePath();
+        ctx.fill();
+
         ctx.restore();
     }
 }
@@ -2782,7 +2845,12 @@ function drawEnemies(){
         const drawX = Math.round(cx - size / 2);
         const drawY = Math.round(cy - size / 2);
         const drawS = Math.round(size);
+        if (e.type !== "boss") {
+            ctx.shadowColor = "#ff2a6d";
+            ctx.shadowBlur = 15;
+        }
         ctx.drawImage(img, drawX, drawY, drawS, drawS);
+        ctx.shadowBlur = 0;
 
         // --- Flash impact (hit) : propre, rond, jamais carré ---
         if (e.hitTimer > 0) {
