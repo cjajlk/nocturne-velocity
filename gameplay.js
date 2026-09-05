@@ -214,13 +214,14 @@ if (profile) {
     }
 
     profile.drones = dronesState;
-        profile.ownedDrones = [
-            dronesState.alpha.unlocked ? `drone${dronesState.alpha.level}` : null,
-            dronesState.beta.unlocked ? `drone${Math.max(2, dronesState.beta.level)}` : null
-        ].filter(Boolean);
-        profile.equippedDrone = dronesState.beta.unlocked
-            ? "beta"
-            : (dronesState.alpha.unlocked ? "alpha" : null);
+    profile.ownedDrones = [
+        dronesState.alpha.unlocked ? `drone${dronesState.alpha.level}` : null,
+        dronesState.beta.unlocked ? `drone${Math.max(2, dronesState.beta.level)}` : null
+    ].filter(Boolean);
+    const equippedDrone = typeof profile.equippedDrone === "string" ? profile.equippedDrone.toLowerCase().trim() : null;
+    profile.equippedDrone = equippedDrone === "beta" && dronesState.beta.unlocked
+        ? "beta"
+        : (equippedDrone === "alpha" && dronesState.alpha.unlocked ? "alpha" : (dronesState.beta.unlocked ? "beta" : (dronesState.alpha.unlocked ? "alpha" : null)));
     profile.garageUnlocks = {
         ...createDefaultGarageUnlocks(),
         ...(profile.garageUnlocks || {})

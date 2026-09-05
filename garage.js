@@ -534,6 +534,9 @@ function renderShop() {
             <p>Cadence actuelle : ${currentCadence}ms • Prochain coût : ${alphaUpgradePrice} crédits</p>
             <div class="price">Upgrade : ${alphaUpgradePrice} crédits</div>
             <button class="buy-btn" onclick="upgradeDroneAlpha()">Améliorer</button>
+            ${profile.equippedDrone === "alpha"
+                ? `<button class="equip-btn equipped">Équipé</button>`
+                : `<button class="equip-btn" onclick="equipDrone('alpha')">Équiper</button>`}
         </div>`;
     } else {
         dronesContainer.innerHTML += `
@@ -545,7 +548,9 @@ function renderShop() {
             <p class="drone-meta">Drone niveau ${alpha.maxLevel} • Niveau actuel : ${alpha.level} / ${alpha.maxLevel}</p>
             <p>Cadence actuelle : ${currentCadence}ms • Performances maximales</p>
             <div class="price">Niveau maximum atteint</div>
-            <button class="equip-btn equipped">MAX</button>
+            ${profile.equippedDrone === "alpha"
+                ? `<button class="equip-btn equipped">Équipé</button>`
+                : `<button class="equip-btn" onclick="equipDrone('alpha')">Équiper</button>`}
         </div>`;
     }
 
@@ -565,9 +570,12 @@ function renderShop() {
             <div class="price">${betaUnlocked ? (betaCurrentLevel < beta.maxLevel ? `Upgrade : ${betaCurrentCost} crédits` : "Niveau maximum atteint") : "700 crédits"}</div>
             ${!betaUnlocked
                 ? `<button class="buy-btn" onclick="buyDroneBeta()">Acheter Drone</button>`
-                : (betaCurrentLevel < beta.maxLevel
-                    ? `<button class="buy-btn" onclick="upgradeDroneBeta()">Améliorer</button>`
-                    : `<button class="equip-btn equipped">MAX</button>`)}
+                : `
+                    ${betaCurrentLevel < beta.maxLevel ? `<button class="buy-btn" onclick="upgradeDroneBeta()">Améliorer</button>` : `<button class="equip-btn equipped">MAX</button>`}
+                    ${profile.equippedDrone === "beta"
+                        ? `<button class="equip-btn equipped">Équipé</button>`
+                        : `<button class="equip-btn" onclick="equipDrone('beta')">Équiper</button>`}
+                ` }
         </div>
         <div class="garage-card drone-card locked-card">
             <div class="card-head">
@@ -878,6 +886,19 @@ function upgradeDroneAlpha() {
 
     saveProfile({ showHardcoreMessage: true });
     updateCreditsDisplay();
+    renderShop();
+}
+
+function equipDrone(droneId) {
+    if (droneId === "alpha" && profile.drones.alpha.unlocked) {
+        profile.equippedDrone = "alpha";
+    }
+
+    if (droneId === "beta" && profile.drones.beta.unlocked) {
+        profile.equippedDrone = "beta";
+    }
+
+    saveProfile({ showHardcoreMessage: true });
     renderShop();
 }
 
