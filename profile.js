@@ -34,7 +34,6 @@ const cjAccountDefaults = {
 
 let playerStats = loadPlayerStats();
 let playerProfile = loadProfile();
-let cjAccount = createCJAccount();
 let playtimeInterval = null;
 
 function safeParse(raw) {
@@ -328,7 +327,6 @@ function setupPlaytimeHook() {
 function initProfilePage() {
   playerStats = normalizePlayerStats(playerStats);
   playerProfile = loadProfile();
-  cjAccount = loadCJAccount();
 
   reconcileStatsWithProfile();
   savePlayerStats();
