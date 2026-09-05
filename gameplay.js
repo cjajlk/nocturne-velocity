@@ -268,6 +268,17 @@ let isNewRecord = false;
 let gameOverAnimStart = null;
 const isMobileDevice = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
+function tickGlobalCJ(deltaMs) {
+    if (!window.CJEngine || typeof window.CJEngine.tick !== "function") return;
+
+    try {
+        // CJ earned in-game, spending handled only by CJAJLK Games
+        window.CJEngine.tick(deltaMs, "velocity");
+    } catch {
+        // Ignore: CJ is optional in standalone Velocity builds.
+    }
+}
+
 function safeParseJSON(raw) {
     try {
         return JSON.parse(raw);
@@ -3163,12 +3174,16 @@ function gameLoop(timestamp){
         return requestAnimationFrame(gameLoop);
     }
 
+    if (document.hidden) {
+        lastFrameTime = timestamp;
+        return requestAnimationFrame(gameLoop);
+    }
+
     const steppedTimestamp = timestamp - (elapsedMs % frameIntervalMs);
     const rawDeltaTime = (steppedTimestamp - lastFrameTime) / 1000;
     const deltaTime = Math.min(rawDeltaTime, 0.05);
     const gameplayDeltaTime = deltaTime * combatSpeedMultiplier;
     lastFrameTime = steppedTimestamp;
-    runMetrics.playTime += deltaTime;
     updateRunWorldReached(world);
 
     if(damageCooldown > 0) damageCooldown--;
@@ -3224,6 +3239,8 @@ function gameLoop(timestamp){
     }
 
     setGameplayHUDVisibility(true);
+    runMetrics.playTime += deltaTime;
+    tickGlobalCJ(deltaTime * 1000);
 
     // Updates
     updatePlayer();

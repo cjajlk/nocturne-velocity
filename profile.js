@@ -115,10 +115,32 @@ function saveCJAccount() {
   return;
 }
 
-function incrementPlaytimeHook(seconds = 1) {
-  if (!Number.isFinite(seconds) || seconds <= 0) return;
-  playerStats.totalPlayTime += seconds;
-  cjAccount.pendingPlayTime += seconds;
+function getGlobalCJBalance() {
+  const sources = [
+    window.cjPlayerData,
+    window.CJajlkAccount,
+    window.CjajlkAccount
+  ];
+
+  for (const source of sources) {
+    if (!source || typeof source !== "object") continue;
+
+    const candidate = [source.balance, source.cj, source.currentCJ, source.cjBalance]
+      .find((value) => Number.isFinite(Number(value)));
+
+    if (candidate !== undefined) {
+      return Math.max(0, Number(candidate));
+    }
+  }
+
+  if (window.CJEngine && typeof window.CJEngine.getBalance === "function") {
+    const engineBalance = Number(window.CJEngine.getBalance());
+    if (Number.isFinite(engineBalance)) {
+      return Math.max(0, engineBalance);
+    }
+  }
+
+  return 0;
 }
 
 function reconcileStatsWithProfile() {
@@ -205,8 +227,11 @@ function renderEquipementTab() {
 }
 
 function renderCJBlock() {
-  setText("cj-balance", `${cjAccount.balance} CJ`);
-  setText("cj-status", cjAccount.syncEnabled ? "connecté" : "isolé (préparation)");
+  const globalBalance = getGlobalCJBalance();
+  const hasGlobalCJ = Boolean(window.cjPlayerData || window.CJajlkAccount || window.CjajlkAccount || (window.CJEngine && typeof window.CJEngine.getBalance === "function"));
+
+  setText("cj-balance", `${globalBalance} CJ`);
+  setText("cj-status", hasGlobalCJ ? "connecté" : "isolé (préparation)");
 }
 
 function renderAll() {
@@ -295,10 +320,6 @@ function setupPlaytimeHook() {
   if (playtimeInterval) {
     clearInterval(playtimeInterval);
   }
-
-  playtimeInterval = setInterval(() => {
-    incrementPlaytimeHook(1);
-  }, 1000);
 
   window.addEventListener("beforeunload", () => {
     savePlayerStats();
