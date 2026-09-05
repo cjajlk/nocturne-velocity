@@ -145,8 +145,13 @@ function loadProfile() {
         }
 
         profileData.drones = dronesState;
-        profileData.ownedDrones = dronesState.alpha.unlocked ? [`drone${dronesState.alpha.level}`] : [];
-        profileData.equippedDrone = dronesState.alpha.unlocked ? "alpha" : null;
+        profileData.ownedDrones = [
+            dronesState.alpha.unlocked ? `drone${dronesState.alpha.level}` : null,
+            dronesState.beta.unlocked ? `drone${Math.max(2, dronesState.beta.level)}` : null
+        ].filter(Boolean);
+        profileData.equippedDrone = dronesState.beta.unlocked
+            ? "beta"
+            : (dronesState.alpha.unlocked ? "alpha" : null);
         profileData.garageUnlocks = {
             ...createDefaultGarageUnlocks(),
             ...(profileData.garageUnlocks || {})
@@ -298,6 +303,16 @@ function getDroneUpgradeCost(level) {
         2: 3000,
         3: 6000,
         4: 10000
+    };
+    return table[level] || 0;
+}
+
+function getDroneBetaUpgradeCost(level) {
+    const table = {
+        1: 1200,
+        2: 2200,
+        3: 3600,
+        4: 5400
     };
     return table[level] || 0;
 }
@@ -534,16 +549,25 @@ function renderShop() {
         </div>`;
     }
 
+    const beta = profile.drones.beta;
+    const betaUnlocked = Boolean(beta.unlocked);
+    const betaCurrentLevel = betaUnlocked ? beta.level : 0;
+    const betaCurrentCost = betaUnlocked && betaCurrentLevel < beta.maxLevel ? getDroneBetaUpgradeCost(betaCurrentLevel) : 0;
+
     dronesContainer.innerHTML += `
-        <div class="garage-card drone-card locked-card">
+        <div class="garage-card drone-card ${betaUnlocked ? "" : "locked-card"}">
             <div class="card-head">
                 <h3>Drone Beta</h3>
                 <button class="info-btn" onclick="showDroneInfo('beta')" aria-label="Infos Drone Beta">ℹ</button>
             </div>
-            <p class="drone-meta">Drone niveau 1 • Statut : verrouillé</p>
-            <p class="locked-note">🔒 Prochaine mise à jour</p>
-            <div class="price">Indisponible</div>
-            <button class="equip-btn equipped">Bloqué</button>
+            <p class="drone-meta">Drone niveau ${betaCurrentLevel} • Statut : ${betaUnlocked ? "Débloqué" : "Verrouillé"}</p>
+            <p>${betaUnlocked ? `Réduction défensive active • Niveau ${betaCurrentLevel} / ${beta.maxLevel}` : "Drone défensif prêt pour une future activation"}</p>
+            <div class="price">${betaUnlocked ? (betaCurrentLevel < beta.maxLevel ? `Upgrade : ${betaCurrentCost} crédits` : "Niveau maximum atteint") : "700 crédits"}</div>
+            ${!betaUnlocked
+                ? `<button class="buy-btn" onclick="buyDroneBeta()">Acheter Drone</button>`
+                : (betaCurrentLevel < beta.maxLevel
+                    ? `<button class="buy-btn" onclick="upgradeDroneBeta()">Améliorer</button>`
+                    : `<button class="equip-btn equipped">MAX</button>`)}
         </div>
         <div class="garage-card drone-card locked-card">
             <div class="card-head">
@@ -766,6 +790,63 @@ function buyDroneAlpha() {
     drone.level = 1;
     profile.ownedDrones = ["drone1"];
     profile.equippedDrone = "alpha";
+
+    saveProfile({ showHardcoreMessage: true });
+    updateCreditsDisplay();
+    renderShop();
+}
+
+function buyDroneBeta() {
+    const drone = profile.drones.beta;
+    if (drone.unlocked) {
+        showPopup("Déjà débloqué", "Le Drone Beta est déjà disponible.");
+        return;
+    }
+
+    if (profile.credits < 700) {
+        showPopup("Crédits insuffisants", "Il faut 700 crédits pour acheter le Drone Beta.");
+        return;
+    }
+
+    profile.credits -= 700;
+    drone.unlocked = true;
+    drone.level = 1;
+    profile.ownedDrones = [
+        profile.drones.alpha.unlocked ? `drone${profile.drones.alpha.level}` : null,
+        "drone2"
+    ].filter(Boolean);
+    profile.equippedDrone = "beta";
+
+    saveProfile({ showHardcoreMessage: true });
+    updateCreditsDisplay();
+    renderShop();
+}
+
+function upgradeDroneBeta() {
+    const drone = profile.drones.beta;
+    if (!drone.unlocked) {
+        showPopup("Drone verrouillé", "Achète d'abord le Drone Beta.");
+        return;
+    }
+
+    if (drone.level >= drone.maxLevel) {
+        showPopup("Niveau max", "Le Drone Beta est déjà au niveau maximum.");
+        return;
+    }
+
+    const cost = getDroneBetaUpgradeCost(drone.level);
+    if (profile.credits < cost) {
+        showPopup("Crédits insuffisants", `Il faut ${cost} crédits pour améliorer ce drone.`);
+        return;
+    }
+
+    profile.credits -= cost;
+    drone.level += 1;
+    profile.ownedDrones = [
+        profile.drones.alpha.unlocked ? `drone${profile.drones.alpha.level}` : null,
+        "drone2"
+    ].filter(Boolean);
+    profile.equippedDrone = "beta";
 
     saveProfile({ showHardcoreMessage: true });
     updateCreditsDisplay();

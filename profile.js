@@ -116,27 +116,25 @@ function saveCJAccount() {
 }
 
 function getGlobalCJBalance() {
-  const sources = [
-    window.cjPlayerData,
-    window.CJajlkAccount,
-    window.CjajlkAccount
-  ];
+  const sharedAccounts = [window.CJajlkAccount, window.CjajlkAccount];
 
-  for (const source of sources) {
-    if (!source || typeof source !== "object") continue;
-
-    const candidate = [source.balance, source.cj, source.currentCJ, source.cjBalance]
-      .find((value) => Number.isFinite(Number(value)));
-
-    if (candidate !== undefined) {
-      return Math.max(0, Number(candidate));
+  for (const account of sharedAccounts) {
+    const totalCJ = account?.playerData?.stats?.totalCJ;
+    if (Number.isFinite(Number(totalCJ))) {
+      return Math.max(0, Number(totalCJ));
     }
   }
 
-  if (window.CJEngine && typeof window.CJEngine.getBalance === "function") {
-    const engineBalance = Number(window.CJEngine.getBalance());
-    if (Number.isFinite(engineBalance)) {
-      return Math.max(0, engineBalance);
+  const raw = localStorage.getItem("cjPlayerData");
+  if (raw) {
+    try {
+      const playerData = JSON.parse(raw);
+      const totalCJ = playerData?.stats?.totalCJ;
+      if (Number.isFinite(Number(totalCJ))) {
+        return Math.max(0, Number(totalCJ));
+      }
+    } catch {
+      return 0;
     }
   }
 
@@ -228,7 +226,7 @@ function renderEquipementTab() {
 
 function renderCJBlock() {
   const globalBalance = getGlobalCJBalance();
-  const hasGlobalCJ = Boolean(window.cjPlayerData || window.CJajlkAccount || window.CjajlkAccount || (window.CJEngine && typeof window.CJEngine.getBalance === "function"));
+  const hasGlobalCJ = Boolean(window.CJajlkAccount || window.CjajlkAccount || localStorage.getItem("cjPlayerData"));
 
   setText("cj-balance", `${globalBalance} CJ`);
   setText("cj-status", hasGlobalCJ ? "connecté" : "isolé (préparation)");

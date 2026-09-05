@@ -214,8 +214,13 @@ if (profile) {
     }
 
     profile.drones = dronesState;
-    profile.ownedDrones = dronesState.alpha.unlocked ? [`drone${dronesState.alpha.level}`] : [];
-    profile.equippedDrone = dronesState.alpha.unlocked ? "alpha" : null;
+        profile.ownedDrones = [
+            dronesState.alpha.unlocked ? `drone${dronesState.alpha.level}` : null,
+            dronesState.beta.unlocked ? `drone${Math.max(2, dronesState.beta.level)}` : null
+        ].filter(Boolean);
+        profile.equippedDrone = dronesState.beta.unlocked
+            ? "beta"
+            : (dronesState.alpha.unlocked ? "alpha" : null);
     profile.garageUnlocks = {
         ...createDefaultGarageUnlocks(),
         ...(profile.garageUnlocks || {})
@@ -455,9 +460,10 @@ function drawHUD() {
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     // Affichage des vies
+    const livesDisplay = Number.isInteger(ui.lives) ? ui.lives : Number(ui.lives.toFixed(1));
     const hudY = 90;
-    ctx.strokeText("Vies : " + ui.lives, 24, hudY);
-    ctx.fillText("Vies : " + ui.lives, 24, hudY);
+    ctx.strokeText("Vies : " + livesDisplay, 24, hudY);
+    ctx.fillText("Vies : " + livesDisplay, 24, hudY);
 
     // HUD Objectif kills
     ctx.font = getHUDFont(20);
@@ -1036,6 +1042,22 @@ let intensityTier = 1;
 let enemySpeedMultiplier = 1;
 let enemyFireRateMultiplier = 1;
 let lazerRechargeMultiplier = 1;
+
+const BETA_DAMAGE_REDUCTION_BY_LEVEL = {
+    1: 0.05,
+    2: 0.10,
+    3: 0.15,
+    4: 0.18,
+    5: 0.20
+};
+
+function getBetaDamageReduction() {
+    const beta = profile?.drones?.beta;
+    if (!beta?.unlocked || profile?.equippedDrone !== "beta") return 0;
+
+    const level = Math.max(1, Math.min(5, Math.floor(beta.level || 0)));
+    return BETA_DAMAGE_REDUCTION_BY_LEVEL[level] || 0;
+}
 
 function getKillsTargetForLevel(level) {
     const levelValue = Math.max(1, Math.floor(level));
@@ -2091,6 +2113,7 @@ function circleRectCollide(cx, cy, r, rx, ry, rw, rh){
 }
 
 function handleCollisions(){
+    const betaReduction = getBetaDamageReduction();
 
     // Enemy bullets -> player
     for(let i = state.enemyBullets.length - 1; i >= 0; i--){
@@ -2111,7 +2134,9 @@ function handleCollisions(){
                     shieldTimeLeft = Math.max(0, shieldTimeLeft - 2.5);
                     triggerVibration(12);
                 } else {
-                    ui.lives--;
+                    const remainingDamage = 1;
+                    const finalDamage = remainingDamage * (1 - betaReduction);
+                    ui.lives = Math.max(0, ui.lives - finalDamage);
                     runMetrics.damageTaken += 1;
                     triggerVibration([24, 20, 18]);
                 }
@@ -2257,7 +2282,9 @@ for(let ei = state.enemies.length - 1; ei >= 0; ei--){
                 shieldTimeLeft = Math.max(0, shieldTimeLeft - 3);
                 triggerVibration(14);
             } else {
-                ui.lives -= 1;
+                const remainingDamage = 1;
+                const finalDamage = remainingDamage * (1 - betaReduction);
+                ui.lives = Math.max(0, ui.lives - finalDamage);
                 runMetrics.damageTaken += 1;
                 triggerVibration([28, 24, 22]);
             }
@@ -2796,6 +2823,21 @@ function drawDrones(){
 
     const hasGlow = dronePower >= 3;
     const hasStrongTrail = dronePower >= 4;
+    const betaReduction = getBetaDamageReduction();
+
+    if (betaReduction > 0) {
+        const haloPulse = 1 + Math.sin(performance.now() * 0.004) * 0.08;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.strokeStyle = "rgba(0, 234, 255, 0.35)";
+        ctx.shadowColor = "rgba(0, 234, 255, 0.7)";
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, Math.max(player.width, player.height) * (0.78 * haloPulse), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
 
     if (state.drones.length > 0) {
         const t = performance.now() * 0.006;
