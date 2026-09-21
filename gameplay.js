@@ -274,15 +274,24 @@ let isNewRecord = false;
 let gameOverAnimStart = null;
 const isMobileDevice = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
+let leavingGameplay = false;
+window.getGameState = function () {
+    const blocker = document.getElementById('orientationLock');
+    const blocked = blocker && getComputedStyle(blocker).display !== 'none';
+    return {
+        running: !ui.gameOver && !leavingGameplay && !runMetricsCommitted,
+        paused: document.hidden || !document.hasFocus() || Boolean(blocked)
+    };
+};
 function tickGlobalCJ(deltaMs) {
-    if (!window.CJEngine || typeof window.CJEngine.tick !== "function") return;
-
+    // Standalone local statistics still work when shared scripts are unavailable.
+    const active = window.getGameState();
+    if (!active.running || active.paused || document.hidden || !document.hasFocus() || !Number.isFinite(deltaMs) || deltaMs <= 0 || deltaMs > 200) return 0;
+    if (!window.CJEngine || typeof window.CJEngine.tick !== 'function') return deltaMs;
     try {
-        // CJ earned in-game, spending handled only by CJAJLK Games
-        window.CJEngine.tick(deltaMs, "velocity");
-    } catch {
-        // Ignore: CJ is optional in standalone Velocity builds.
-    }
+        const accepted = window.CJEngine.tick(deltaMs, 'velocity');
+        return window.CJEngine.tracksPlayTime ? accepted : deltaMs;
+    } catch { return 0; }
 }
 
 function safeParseJSON(raw) {
@@ -526,6 +535,17 @@ let energy = 100;
 let maxEnergy = 100;
 let energyRegenRate = 18; // énergie par seconde
 let lastFrameTime = null;
+const resetActivityFrame = () => {
+    lastFrameTime = null;
+    try { window.CJEngine?.suspend?.(); } catch { /* Shared CJ must not interrupt the game. */ }
+};
+document.addEventListener('visibilitychange', resetActivityFrame);
+window.addEventListener('blur', resetActivityFrame);
+window.addEventListener('focus', resetActivityFrame);
+window.addEventListener('pagehide', resetActivityFrame);
+window.addEventListener('pageshow', resetActivityFrame);
+window.addEventListener('resize', resetActivityFrame);
+window.addEventListener('orientationchange', resetActivityFrame);
 let impacts = [];
 const boost = {
     active: false,
@@ -810,6 +830,8 @@ function createBackButton(){
     btn.addEventListener("mousedown", ()=>btn.style.transform="scale(0.93)");
     btn.addEventListener("mouseup", ()=>btn.style.transform="scale(1)");
     btn.addEventListener("click", ()=>{
+        leavingGameplay = true;
+        resetActivityFrame();
         commitRunStats();
         if (profile) {
             profile.hardcoreMode = false;
@@ -3282,8 +3304,8 @@ function gameLoop(timestamp){
     }
 
     setGameplayHUDVisibility(true);
-    runMetrics.playTime += deltaTime;
-    tickGlobalCJ(deltaTime * 1000);
+    // Use the UNCLAMPED wall delta for accounting, never the physics time scale.
+    runMetrics.playTime += tickGlobalCJ(rawDeltaTime * 1000) / 1000;
 
     // Updates
     updatePlayer();
