@@ -171,7 +171,7 @@ function setText(id, value) {
 }
 
 function renderPlayerName() {
-  setText("playerNameDisplay", playerStats.playerName || "Pilote");
+  setText("playerNameDisplay", window.CJajlkAccount?.getDisplayPseudo?.(playerStats.playerName || "Pilote") || playerStats.playerName || "Pilote");
 }
 
 function renderStatsTab() {
@@ -240,56 +240,7 @@ function renderAll() {
   renderCJBlock();
 }
 
-function setupNameEditor() {
-  const editBtn = document.getElementById("editNameBtn");
-  const editor = document.getElementById("nameEditor");
-  const input = document.getElementById("playerNameInput");
-  const saveBtn = document.getElementById("saveNameBtn");
-  const cancelBtn = document.getElementById("cancelNameBtn");
-  const errorEl = document.getElementById("nameError");
-
-  if (!editBtn || !editor || !input || !saveBtn || !cancelBtn || !errorEl) return;
-
-  const openEditor = () => {
-    input.value = playerStats.playerName || "Pilote";
-    errorEl.textContent = "";
-    editor.classList.remove("hidden");
-    input.focus();
-    input.select();
-  };
-
-  const closeEditor = () => {
-    editor.classList.add("hidden");
-    errorEl.textContent = "";
-  };
-
-  const saveName = () => {
-    const rawValue = input.value || "";
-    const cleaned = rawValue.replace(/\s+/g, " ").trim();
-
-    if (cleaned.length < 3 || cleaned.length > 16) {
-      errorEl.textContent = "Pseudo: 3 à 16 caractères.";
-      return;
-    }
-
-    playerStats.playerName = cleaned;
-    savePlayerStats();
-    renderPlayerName();
-    closeEditor();
-  };
-
-  editBtn.addEventListener("click", openEditor);
-  cancelBtn.addEventListener("click", closeEditor);
-  saveBtn.addEventListener("click", saveName);
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      saveName();
-    }
-    if (event.key === "Escape") {
-      closeEditor();
-    }
-  });
-}
+function setupNameEditor() { /* The shared nickname is edited in the Hub only. */ }
 
 function setupTabs() {
   const buttons = Array.from(document.querySelectorAll(".tab-btn"));
@@ -339,3 +290,6 @@ function initProfilePage() {
 }
 
 document.addEventListener("DOMContentLoaded", initProfilePage);
+
+for(const event of ['cj-account-ready','cj-account-updated','focus','pageshow'])window.addEventListener(event,renderPlayerName);
+window.addEventListener('storage',event=>{if(event.key==='cjPlayerData'||event.key===null)renderPlayerName();});

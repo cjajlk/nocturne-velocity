@@ -279,7 +279,7 @@ window.getGameState = function () {
     const blocker = document.getElementById('orientationLock');
     const blocked = blocker && getComputedStyle(blocker).display !== 'none';
     return {
-        running: !ui.gameOver && !leavingGameplay && !runMetricsCommitted,
+        running: window.CJajlkAccount?.isIdentityReady?.() !== false && !ui.gameOver && !leavingGameplay && !runMetricsCommitted,
         paused: document.hidden || !document.hasFocus() || Boolean(blocked)
     };
 };

@@ -308,6 +308,7 @@ canvas{
     }
 }
 </style>
+<script src="https://cjajlk.github.io/cjajlkGames-V2-test/core/cjAccount.js" data-universal="true" defer></script>
 </head>
 
 <body>
@@ -534,6 +535,8 @@ function loadPlayerStats(){
 }
 
 function getMenuPlayerName(){
+    const shared = window.CJajlkAccount?.getDisplayPseudo?.('');
+    if (shared) return shared;
     const stats = loadPlayerStats();
     const rawName = typeof stats.playerName === "string" ? stats.playerName : "";
     const cleaned = rawName.replace(/\s+/g, " ").trim();
@@ -661,5 +664,6 @@ function animate(){
 animate();
 </script>
 
+<script>for(const event of ['cj-account-ready','cj-account-updated','focus','pageshow'])window.addEventListener(event,renderPlayerBadge);window.addEventListener('storage',event=>{if(event.key==='cjPlayerData'||event.key===null)renderPlayerBadge();});</script>
 </body>
 </html>

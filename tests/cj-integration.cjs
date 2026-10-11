@@ -23,7 +23,7 @@ assert.ok(source.includes('tickGlobalCJ(rawDeltaTime * 1000)'));
 for(const file of ['game.html','profil.html']){
  const html=fs.readFileSync(path.join(root,file),'utf8');
  assert.equal((html.match(/core\/cjAccount\.js/g)||[]).length,1);assert.equal((html.match(/core\/cjEngine\.js/g)||[]).length,1);
- assert.ok(html.indexOf('core/cjAccount.js')<html.indexOf('core/cjEngine.js'));assert.ok(html.includes('data-readonly="true"'));
+ assert.ok(html.indexOf('core/cjAccount.js')<html.indexOf('core/cjEngine.js'));assert.ok(html.includes('data-universal="true"'));
 }
 const profile=fs.readFileSync(path.join(root,'profile.js'),'utf8');assert.doesNotMatch(profile,/setInterval\s*\(|addPlayTime\s*\(|addCJ\s*\(|CJEngine\.tick\s*\(/);
 assert.doesNotMatch(source,/addPlayTime\s*\(|addCJ\s*\(|spendCJ\s*\(|setItem\s*\(\s*['"]cjPlayerData/);
